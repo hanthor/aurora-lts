@@ -28,7 +28,6 @@ ln -sf /usr/share/icons/hicolor/scalable/distributor-logo.svg /usr/share/pixmaps
 # rm -rf /usr/share/pixmaps/faces/bluefin
 
 # This should only be enabled on `-dx`
-# sed -i "/^show-boxbuddy=.*/d" /etc/dconf/db/distro.d/04-bluefin-logomenu-extension
 # sed -i "/^show-boxbuddy=.*/d" /usr/share/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override
 sed -i "/.*io.github.dvlv.boxbuddyrs.*/d" /etc/ublue-os/system-flatpaks.list
 

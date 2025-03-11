@@ -12,7 +12,6 @@ systemctl enable rpm-ostree-countme.service
 systemctl --global enable podman-auto-update.timer
 systemctl enable rpm-ostree-countme.service
 systemctl disable rpm-ostree.service
-systemctl enable dconf-update.service
 systemctl disable mcelog.service
 systemctl enable tailscaled.service
 systemctl enable uupd.timer
