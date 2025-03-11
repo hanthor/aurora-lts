@@ -1,6 +1,7 @@
 name: Build Aurora LTS
 
 on:
+  push:
   pull_request:
     branches:
       - main
