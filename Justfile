@@ -72,7 +72,7 @@ sudoif command *args:
 # This Justfile recipe builds a container image using Podman.
 #
 # Arguments:
-#   $target_image - The tag you want to apply to the image (default: bluefin).
+#   $target_image - The tag you want to apply to the image (default: aurora).
 #   $tag - The tag for the image (default: lts).
 #   $dx - Enable DX (default: "0").
 #   $hwe - Enable HWE (default: "0").
@@ -84,7 +84,7 @@ sudoif command *args:
 # HWE:
 #   Hardware Enablement (HWE) is a feature that allows you to install the latest hardware support for your system.
 #   Currently this install the Hyperscale SIG kernel which will stay ahead of the CentOS Stream kernel and enables btrfs
-# GDX: https://docs.projectbluefin.io/gdx/
+# GDX: https://docs.projectaurora.io/gdx/
 #   GPU Developer Experience (GDX) creates a base as an AI and Graphics platform.
 #   Installs Nvidia drivers, CUDA, and other tools.
 #
@@ -94,9 +94,9 @@ sudoif command *args:
 # just build $target_image $tag $dx $hwe $gdx
 #
 # Example usage:
-#   just build bluefin lts 1 0 1
+#   just build aurora lts 1 0 1
 #
-# This will build an image 'bluefin:lts' with DX and GDX enabled.
+# This will build an image 'aurora:lts' with DX and GDX enabled.
 #
 
 # Build the image using the specified parameters
@@ -371,7 +371,7 @@ patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
         quay.io/centos/centos:stream10 \
         bash -c 'dnf install -y lorax && \
     	mkdir /images && cd /iso_files/product && find . | cpio -c -o | gzip -9cv > /images/product.img && cd / \
-            && mkksiso --add images --volid bluefin-boot /{{ iso_path }} /output/final.iso'
+            && mkksiso --add images --volid aurora-boot /{{ iso_path }} /output/final.iso'
 
     if [ {{ override }} -ne 0 ] ; then
         mv output/final.iso {{ iso_path }}
