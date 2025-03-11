@@ -23,13 +23,13 @@ ln -sf /usr/share/icons/hicolor/scalable/distributor-logo.svg /usr/share/icons/h
 ln -sf /usr/share/icons/hicolor/scalable/distributor-logo.svg /usr/share/pixmaps/fedora-logo-sprite.svg
 
 # Required for bluefin faces to work without conflicting with a ton of packages
-rm -f /usr/share/pixmaps/faces/* || echo "Expected directory deletion to fail"
-mv /usr/share/pixmaps/faces/bluefin/* /usr/share/pixmaps/faces
-rm -rf /usr/share/pixmaps/faces/bluefin
+# rm -f /usr/share/pixmaps/faces/* || echo "Expected directory deletion to fail"
+# mv /usr/share/pixmaps/faces/bluefin/* /usr/share/pixmaps/faces
+# rm -rf /usr/share/pixmaps/faces/bluefin
 
 # This should only be enabled on `-dx`
-sed -i "/^show-boxbuddy=.*/d" /etc/dconf/db/distro.d/04-bluefin-logomenu-extension
-#sed -i "/^show-boxbuddy=.*/d" /usr/share/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override
+# sed -i "/^show-boxbuddy=.*/d" /etc/dconf/db/distro.d/04-bluefin-logomenu-extension
+# sed -i "/^show-boxbuddy=.*/d" /usr/share/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override
 sed -i "/.*io.github.dvlv.boxbuddyrs.*/d" /etc/ublue-os/system-flatpaks.list
 
 # Add Flathub by default
