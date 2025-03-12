@@ -15,7 +15,7 @@ sed -i -e "s@ls -alct /@&var/log@g" /usr/share/ublue-os/fastfetch.jsonc
 # Automatic wallpaper changing by month
 HARDCODED_RPM_MONTH="12"
 #sed -i "/picture-uri/ s/${HARDCODED_RPM_MONTH}/$(date +%m)/" "/usr/share/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override"
-glib-compile-schemas /usr/share/glib-2.0/schemas
+#glib-compile-schemas /usr/share/glib-2.0/schemas
 
 ln -sf /usr/share/icons/hicolor/scalable/distributor-logo.svg /usr/share/icons/hicolor/scalable/apps/aurora-helium-logo-icon.svg && \
 ln -sf /usr/share/icons/hicolor/scalable/distributor-logo.svg /usr/share/icons/hicolor/scalable/apps/start-here.svg && \
