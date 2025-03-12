@@ -1,6 +1,9 @@
 name: Build Aurora LTS HWE
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main

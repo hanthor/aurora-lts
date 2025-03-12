@@ -1,6 +1,9 @@
 name: Build Aurora LTS GDX
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
