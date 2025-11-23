@@ -84,15 +84,15 @@ dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:packages install \
 
 
 # COPRs: fw-fanctrl, kairpods, sunshine
-dnf -y copr enable ublue-os/staging
+# dnf -y copr enable ublue-os/staging
 # dnf -y copr enable ledif/kairpods
 # dnf -y copr enable lizardbyte/beta
 
-dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:staging install fw-fanctrl
+# dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:staging install fw-fanctrl
 # dnf -y --enablerepo copr:copr.fedorainfracloud.org:ledif:kairpods install kairpods
 # dnf -y --enablerepo copr:copr.fedorainfracloud.org:lizardbyte:beta install sunshine
 
-dnf -y copr disable ublue-os/staging
+# dnf -y copr disable ublue-os/staging
 # dnf -y copr disable ledif/kairpods
 # dnf -y copr disable lizardbyte/beta
 
