@@ -1,4 +1,4 @@
-name: Build Bluefin LTS
+name: Build Aurora LTS
 
 on:
   pull_request:
