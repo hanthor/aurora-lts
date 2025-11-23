@@ -1,0 +1,26 @@
+cosign.key
+output/
+*.raw
+*.qcow2
+__pycache__/
+*.pyc
+
+aurora/
+bluefin-lts/
+legacy/
+
+# IDE
+.idea/
+.vscode/
+.zed/
+
+# Changelog generation temporary files
+changelog.md
+output.env
+github_output.txt
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.zed/

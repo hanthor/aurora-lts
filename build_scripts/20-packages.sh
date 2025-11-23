@@ -1,0 +1,119 @@
+#!/bin/bash
+
+set -xeuo pipefail
+
+dnf -y remove \
+	setroubleshoot
+
+dnf -y install \
+	-x gnome-extensions-app \
+	btrfs-progs \
+	buildah \
+	distrobox \
+	fastfetch \
+	firewalld \
+	fpaste \
+	fzf \
+	glow \
+	gum \
+	hplip \
+	jetbrains-mono-fonts-all \
+	just \
+	nss-mdns \
+	ntfs-3g \
+	powertop \
+	rclone \
+	restic \
+	system-reinstall-bootc \
+	tuned-ppd \
+	wireguard-tools \
+	wl-clipboard \
+	xhost \
+	adcli \
+	borgbackup \
+	davfs2 \
+	fish \
+	freeipa-client \
+	git-credential-libsecret \
+	ifuse \
+	krb5-workstation \
+	ksystemlog \
+	libimobiledevice \
+	libsss_autofs \
+	libxcrypt-compat \
+	lm_sensors \
+	oddjob-mkhomedir \
+	ptyxis \
+	samba-winbind \
+	samba-winbind-clients \
+	samba-winbind-modules \
+	setools-console \
+	sssd-ad \
+	sssd-ipa \
+	sssd-krb5 \
+	tmux \
+	zsh
+
+# Everything that depends on external repositories should be after this.
+# Make sure to set them as disabled and enable them only when you are going to use their packages.
+# We do, however, leave crb and EPEL enabled by default.
+
+dnf config-manager --add-repo "https://pkgs.tailscale.com/stable/centos/${MAJOR_VERSION_NUMBER}/tailscale.repo"
+dnf config-manager --set-disabled "tailscale-stable"
+# FIXME: tailscale EPEL10 request: https://bugzilla.redhat.com/show_bug.cgi?id=2349099
+dnf -y --enablerepo "tailscale-stable" install \
+	tailscale
+
+dnf -y copr enable ublue-os/packages
+dnf -y copr disable ublue-os/packages
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:packages swap \
+	centos-logos aurora-logos
+
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:packages install \
+	-x aurora-logos \
+	ublue-os-just \
+	ublue-os-luks \
+	ublue-os-signing \
+	ublue-os-udev-rules \
+	ublue-os-update-services \
+	ublue-{motd,fastfetch,bling,rebase-helper,setup-services,polkit-rules,brew} \
+	uupd \
+	aurora-backgrounds \
+	kcm_ublue \
+	krunner-bazaar
+
+
+# COPRs: fw-fanctrl, kairpods, sunshine
+dnf -y copr enable ublue-os/staging
+dnf -y copr enable ledif/kairpods
+dnf -y copr enable lizardbyte/beta
+
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:staging install fw-fanctrl
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:ledif:kairpods install kairpods
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:lizardbyte:beta install sunshine
+
+dnf -y copr disable ublue-os/staging
+dnf -y copr disable ledif/kairpods
+dnf -y copr disable lizardbyte/beta
+
+# Upstream ublue-os-signing bug, we are using /usr/etc for the container signing and bootc gets mad at this
+# FIXME: remove this once https://github.com/ublue-os/packages/issues/245 is closed
+cp -avf /usr/etc/. /etc
+rm -rvf /usr/etc
+
+dnf -y copr enable ublue-os/staging
+dnf -y copr disable ublue-os/staging
+dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:staging install \
+	-x gnome-extensions-app
+
+dnf -y copr enable che/nerd-fonts "centos-stream-${MAJOR_VERSION_NUMBER}-$(arch)"
+dnf -y copr disable che/nerd-fonts
+dnf -y --enablerepo "copr:copr.fedorainfracloud.org:che:nerd-fonts" install \
+	nerd-fonts
+
+# This is required so homebrew works indefinitely.
+# Symlinking it makes it so whenever another GCC version gets released it will break if the user has updated it without-
+# the homebrew package getting updated through our builds.
+# We could get some kind of static binary for GCC but this is the cleanest and most tested alternative. This Sucks.
+dnf -y --setopt=install_weak_deps=False install gcc
+
