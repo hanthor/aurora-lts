@@ -155,12 +155,12 @@ jobs:
           SHA_HEAD_SHORT=$(git rev-parse --short HEAD)
 
           # Construct build args
-          BUILD_ARGS="MAJOR_VERSION=${CENTOS_VERSION} \
-          IMAGE_NAME=${IMAGE_NAME} \
-          IMAGE_VENDOR=${REPO_OWNER} \
-          ENABLE_GDX=${ENABLE_GDX} \
-          ENABLE_HWE=${ENABLE_HWE} \
-          AKMODS_VERSION=${AKMODS_VERSION} \
+          BUILD_ARGS="MAJOR_VERSION=${CENTOS_VERSION}
+          IMAGE_NAME=${IMAGE_NAME}
+          IMAGE_VENDOR=${REPO_OWNER}
+          ENABLE_GDX=${ENABLE_GDX}
+          ENABLE_HWE=${ENABLE_HWE}
+          AKMODS_VERSION=${AKMODS_VERSION}
           SHA_HEAD_SHORT=${SHA_HEAD_SHORT}"
           
           # Handle multi-line output for GITHUB_OUTPUT
