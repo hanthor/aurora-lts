@@ -15,7 +15,7 @@ rebase-helper:
     /usr/libexec/ublue-rebase-helper
 
 toggle-devmode:
-    /usr/libexec/ublue-dx-helper
+    # TODO - implement IDE picker
 
 tailscale-exitnode:
     /usr/libexec/ublue-ts-exit-node

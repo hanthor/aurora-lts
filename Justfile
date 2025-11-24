@@ -75,12 +75,8 @@ sudoif command *args:
 # Arguments:
 #   $target_image - The tag you want to apply to the image (default: bluefin).
 #   $tag - The tag for the image (default: lts).
-#   $dx - Enable DX (default: "0").
 #   $gdx - Enable GDX (default: "0").
 #
-# DX:
-#   Developer Experience (DX) is a feature that allows you to install the latest developer tools for your system.
-#   Packages include VScode, Docker, Distrobox, and more.
 # GDX: https://docs.projectbluefin.io/gdx/
 #   GPU Developer Experience (GDX) creates a base as an AI and Graphics platform.
 #   Installs Nvidia drivers, CUDA, and other tools.
@@ -88,16 +84,15 @@ sudoif command *args:
 # The script constructs the version string using the tag and the current date.
 # If the git working directory is clean, it also includes the short SHA of the current HEAD.
 #
-# just build $target_image $tag $dx $gdx $hwe
 #
 # Example usage:
-#   just build bluefin lts 1 0 1
+#   just build bluefin lts 1 0
 #
-# This will build an image 'bluefin:lts' with DX and HWE enabled.
+# This will build an image 'bluefin:lts' with GDX enabled.
 #
 
 # Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag $dx="0" $gdx="0" $hwe="0":
+build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     #!/usr/bin/env bash
 
     # Get Version
@@ -107,7 +102,6 @@ build $target_image=image_name $tag=default_tag $dx="0" $gdx="0" $hwe="0":
     BUILD_ARGS+=("--build-arg" "MAJOR_VERSION=${centos_version}")
     BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${image_name}")
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${repo_organization}")
-    BUILD_ARGS+=("--build-arg" "ENABLE_DX=${dx}")
     BUILD_ARGS+=("--build-arg" "ENABLE_GDX=${gdx}")
     BUILD_ARGS+=("--build-arg" "ENABLE_HWE=${hwe}")
     # Select akmods source tag for mounted ZFS/NVIDIA images

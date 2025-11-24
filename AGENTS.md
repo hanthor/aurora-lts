@@ -15,10 +15,9 @@ Always reference these instructions first and fallback to search or bash command
 - Verify git is available: `which git`
 
 ### Build Commands - NEVER CANCEL BUILDS
-- **Build container image**: `just build [IMAGE_NAME] [TAG] [DX] [GDX] [HWE]`
+- **Build container image**: `just build [IMAGE_NAME] [TAG] [GDX] [HWE]`
   - Takes 45-90 minutes. NEVER CANCEL. Set timeout to 120+ minutes.
   - Example: `just build aurora lts 0 0 0` (basic build)
-  - Example: `just build aurora lts 1 0 0` (with DX - developer tools)
   - Example: `just build aurora lts 0 1 0` (with GDX - GPU/AI tools)
 - **Build VM images**: 
   - `just build-qcow2` - QCOW2 virtual machine image (45-90 minutes)
@@ -48,7 +47,6 @@ Always reference these instructions first and fallback to search or bash command
 
 ### Key Build Variants
 - **Regular**: Basic Aurora LTS (`just build aurora lts 0 0 0`)
-- **DX**: Developer Experience with VSCode, Docker, development tools (`just build aurora lts 1 0 0`)
 - **GDX**: GPU Developer Experience with CUDA, AI tools (`just build aurora lts 0 1 0`)  
 - **HWE**: Hardware Enablement for newer hardware (`just build aurora lts 0 0 1`)
 
@@ -108,7 +106,6 @@ Always reference these instructions first and fallback to search or bash command
 
 ### Available Workflows
 - `build-regular.yml` - Standard Aurora LTS build
-- `build-dx.yml` - Developer Experience variant
 - `build-gdx.yml` - GPU Developer Experience variant
 - `build-iso.yml` - ISO installer builds
 

@@ -2,8 +2,8 @@
 # This file contains all constants, templates, and configuration for the changelog generator
 
 # Basic configuration
-os_name: "bluefin-lts"
-targets: ["lts", "dx", "gdx"]
+os_name: "aurora"
+targets: ["lts", "gdx", "lts-hwe"]
 registry_url: "ghcr.io/ublue-os"
 
 # Package blacklist - packages to exclude from changelog
@@ -24,8 +24,8 @@ package_blacklist:
 # Image variants for different targets
 image_variants:
   - ""
-  - "-dx" 
   - "-gdx"
+  - "-hwe"
 
 # Regex patterns
 patterns:
@@ -94,7 +94,6 @@ templates:
 sections:
   all: "All Images"
   base: "Base Images"
-  dx: "[Developer Experience Images](https://docs.projectbluefin.io/bluefin-dx)"
   gdx: "[Graphical Developer Experience Images](https://docs.projectbluefin.io/gdx)"
 
 # Default configuration values

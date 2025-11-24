@@ -49,13 +49,6 @@ CUSTOM_NAME=""
 copy_systemfiles_for "$(arch)"
 run_buildscripts_for "$(arch)"
 
-if [ "$ENABLE_DX" == "1" ]; then
-	copy_systemfiles_for dx
-	run_buildscripts_for dx
-	copy_systemfiles_for "$(arch)-dx"
-	run_buildscripts_for "$(arch)/dx"
-fi
-
 if [ "$ENABLE_GDX" == "1" ]; then
 	copy_systemfiles_for gdx
 	run_buildscripts_for gdx

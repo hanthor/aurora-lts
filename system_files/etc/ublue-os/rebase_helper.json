@@ -1,5 +1,4 @@
 {
-	"dx-helper-enabled": true,
 	"image-base-name": "aurora",
 	"available-tags": [
 		"lts",

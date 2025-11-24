@@ -325,8 +325,7 @@ class ChangelogGenerator:
                     
                 if t == "base" and experience != "base":
                     continue
-                if t == "dx" and experience != "dx":
-                    continue
+
                     
                 if first:
                     other.update(p for p in pkg[img] if p not in common)
