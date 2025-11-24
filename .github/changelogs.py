@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Changelog generation script for Bluefin LTS container images.
+Changelog generation script for Aurora LTS container images.
 
 This script generates changelogs by comparing container image manifests
 and extracting package differences between versions.
@@ -144,7 +144,7 @@ class ChangelogGenerator:
     def get_images(self, target: str) -> List[Tuple[str, str]]:
         """Generate image names and experiences for a given target."""
         images = []
-        base_name = "bluefin"  # Base image name is always "bluefin"
+        base_name = "aurora"  # Base image name is always "aurora"
         
         for experience in self.config.image_variants:
             img = base_name
@@ -769,7 +769,7 @@ class ChangelogGenerator:
 def setup_argument_parser() -> argparse.ArgumentParser:
     """Set up the command line argument parser."""
     parser = argparse.ArgumentParser(
-        description="Generate changelogs for Bluefin LTS container images",
+        description="Generate changelogs for Aurora LTS container images",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
