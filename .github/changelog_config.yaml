@@ -58,13 +58,6 @@ templates:
     | **Mesa** | {pkgrel:mesa-filesystem} |
     | **Podman** | {pkgrel:podman} |
 
-    ### Major DX packages
-    | Name | Version |
-    | --- | --- |
-    | **Docker** | {pkgrel:docker-ce} |
-    | **VSCode** | {pkgrel:code} |
-    | **Ramalama** | {pkgrel:ramalama} |
-
     ### Major GDX packages
     | Name | Version |
     | --- | --- |
