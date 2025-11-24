@@ -120,36 +120,78 @@ jobs:
         with:
           target-dir: /var/lib/containers
 
-      - name: Setup Just
-        uses: extractions/setup-just@e33e0265a09d6d736e2ee1e0eb685ef1de4669ff # v3
+      - name: Login to GitHub Container Registry
+        if: ${{ inputs.publish }}
+        env:
+          REGISTRY: ghcr.io
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin "${REGISTRY}"
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin "${REGISTRY}"
 
-      - name: Check Just Syntax
-        shell: bash
-        run: just check
-
-      - name: Build Image
-        id: build-image
+      - name: Generate Build Args
+        id: build-args
         shell: bash
         env:
           FLAVOR: ${{ inputs.flavor }}
           HWE: ${{ inputs.hwe }}
+          CENTOS_VERSION: ${{ env.CENTOS_VERSION }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          IMAGE_REGISTRY: ${{ env.IMAGE_REGISTRY }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
-          set -x
-          just=$(which just)
-
           ENABLE_HWE=0
           ENABLE_GDX=0
+          AKMODS_VERSION="centos-10"
+          COREOS_STABLE_VERSION="42" # Default from Justfile
+
           if [[ "${HWE}" == "true" ]] ; then
-            export DEFAULT_TAG="${DEFAULT_TAG}-hwe"
-            echo "DEFAULT_TAG=${DEFAULT_TAG}" >> "${GITHUB_ENV}"
             ENABLE_HWE=1
+            AKMODS_VERSION="coreos-stable-${COREOS_STABLE_VERSION}"
           fi
           if [[ "${FLAVOR}" =~ "gdx" ]] ; then
             ENABLE_GDX=1
           fi
 
-          sudo $just build "${IMAGE_NAME}" "${DEFAULT_TAG}" "${ENABLE_GDX}" "${ENABLE_HWE}"
-          echo "image_tag=${DEFAULT_TAG}" >> "${GITHUB_OUTPUT}"
+          SHA_HEAD_SHORT=$(git rev-parse --short HEAD)
+
+          # Construct build args
+          BUILD_ARGS="MAJOR_VERSION=${CENTOS_VERSION}
+          IMAGE_NAME=${IMAGE_NAME}
+          IMAGE_VENDOR=${REPO_OWNER}
+          ENABLE_GDX=${ENABLE_GDX}
+          ENABLE_HWE=${ENABLE_HWE}
+          AKMODS_VERSION=${AKMODS_VERSION}
+          SHA_HEAD_SHORT=${SHA_HEAD_SHORT}"
+          
+          # Handle multi-line output for GITHUB_OUTPUT
+          echo "build_args<<EOF" >> $GITHUB_OUTPUT
+          echo "$BUILD_ARGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Determine tags
+          DEFAULT_TAG="lts"
+          if [[ "${HWE}" == "true" ]] ; then
+            DEFAULT_TAG="${DEFAULT_TAG}-hwe"
+          fi
+          echo "default_tag=${DEFAULT_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build, rechunk, and push the image
+        uses: jharmison-redhat/action-bootc-build@v1
+        id: build-image
+        with:
+          push: ${{ inputs.publish }}
+          tag: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}
+          build-args: ${{ steps.build-args.outputs.build_args }}
+          file: Containerfile
+          arch: ${{ matrix.platform }}
+
+      - name: Get Image Digest
+        if: ${{ inputs.publish }}
+        id: push
+        run: |
+          IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}"
+          DIGEST=$(podman inspect --format '{{.Digest}}' "docker://${IMAGE}")
+          echo "remote_image_digest=${DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Setup Syft
         id: setup-syft
@@ -160,8 +202,8 @@ jobs:
         id: generate-sbom
         if: ${{ inputs.sbom && inputs.publish }}
         env:
-          IMAGE: ${{ env.IMAGE_NAME }}
-          DEFAULT_TAG: ${{ env.DEFAULT_TAG }}
+          IMAGE: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
+          DEFAULT_TAG: ${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}
           SYFT_CMD: ${{ steps.setup-syft.outputs.cmd }}
         run: |
           sudo systemctl start podman.socket
@@ -170,64 +212,8 @@ jobs:
           sudo "$SYFT_CMD" "${IMAGE}:${DEFAULT_TAG}" -o "spdx-json=${OUTPUT_PATH}"
           echo "OUTPUT_PATH=${OUTPUT_PATH}" >> "${GITHUB_OUTPUT}"
 
-      - name: Run Rechunker
-        if: ${{ inputs.rechunk && inputs.publish }}
-        id: rechunk
-        uses: hhd-dev/rechunk@5fbe1d3a639615d2548d83bc888360de6267b1a2 # v1.2.4
-        with:
-          rechunk: ghcr.io/hhd-dev/rechunk:v1.2.1
-          ref: localhost/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-          prev-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-          skip_compression: true
-          version: ${{ env.CENTOS_VERSION }}
 
-      - name: Load Image
-        if: ${{ inputs.publish }}
-        id: load
-        env:
-          RECHUNK_RAN: ${{ inputs.rechunk }}
-          RECHUNK_REF: ${{ steps.rechunk.outputs.ref }}
-          RECHUNK_LOCATION: ${{ steps.rechunk.outputs.location }}
-        run: |
-          if [ "${RECHUNK_RAN}" == "true" ] ; then
-            IMAGE="$(podman pull "${RECHUNK_REF}")"
-            sudo rm -rf "${RECHUNK_LOCATION}"
-          else
-            IMAGE="localhost/${IMAGE_NAME}:${DEFAULT_TAG}"
-          fi
-          podman image tag "${IMAGE}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}"
 
-          IMAGE="${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}"
-          IMAGE_DIGEST="$(podman image inspect --format '{{.Digest}}' "${IMAGE}")"
-          echo "image=${IMAGE}" >> "${GITHUB_OUTPUT}"
-          echo "digest=${IMAGE_DIGEST}" >> "${GITHUB_OUTPUT}"
-
-      - name: Login to GitHub Container Registry
-        if: ${{ inputs.publish }}
-        env:
-          REGISTRY: ghcr.io
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin "${REGISTRY}"
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u "${{ github.actor }}" --password-stdin "${REGISTRY}"
-
-      - name: Push to GHCR
-        if: ${{ inputs.publish }}
-        id: push
-        env:
-          IMAGE_REGISTRY: ${{ env.IMAGE_REGISTRY }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
-          IMAGE_DIGEST: ${{ steps.load.outputs.digest }}
-          PLATFORM: ${{ matrix.platform }}
-          HWE: ${{ inputs.hwe }}
-          MAX_RETRIES: 3
-        run: |
-          set -x
-          podman tag "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}-${PLATFORM}"
-          for i in $(seq "${MAX_RETRIES}"); do
-            podman push --digestfile=/tmp/digestfile "${IMAGE_REGISTRY}/${IMAGE_NAME}:${DEFAULT_TAG}-${PLATFORM}" && break || sleep $((5 * i));
-          done
-          REMOTE_IMAGE_DIGEST=$(cat /tmp/digestfile)
-          echo "remote_image_digest=${REMOTE_IMAGE_DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@7e8b541eb2e61bf99390e1afd4be13a184e9ebc5 # v3.10.1
