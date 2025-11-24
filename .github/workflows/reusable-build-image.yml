@@ -183,6 +183,7 @@ jobs:
           tag: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}
           build-args: ${{ steps.build-args.outputs.build_args }}
           file: Containerfile
+          arch: ${{ matrix.platform }}
 
       - name: Get Image Digest
         if: ${{ inputs.publish }}
