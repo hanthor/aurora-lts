@@ -1,20 +1,50 @@
-# Aurora LTS
-*Achillobator giganticus*
+# Aurora
 
-[![Build Aurora LTS](https://github.com/ublue-os/aurora-lts/actions/workflows/build-regular.yml/badge.svg)](https://github.com/ublue-os/aurora-lts/actions/workflows/build-regular.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/13d42ded3cf54250a71ad05aca7d5961)](https://app.codacy.com/gh/ublue-os/aurora-lts/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10098/badge)](https://www.bestpractices.dev/projects/10098)
-[![Aurora LTS on ArtifactHub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/aurora)](https://artifacthub.io/packages/container/aurora/aurora)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ublue-os/aurora-lts) [<img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ublue-os/countme/main/badge-endpoints/aurora-lts.json&label=Aurora%20LTS&logo=data:image%2Fpng;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAoCAYAAACIC2hQAAAABGdBTUEAALGPC%2FxhBQAAAAFzUkdCAdnJLH8AAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB%2BkIAxc4EiIVfIMAAAnSSURBVFjDzZhrjF1Xdcf%2F%2B3We95w7984dz3tsx%2BNHnNgJAcd1oJAHyC0pgQoCfAD1EUELQqoIoAghHipUSP3afmhVQSskEBZIiEcLSaUqipMSBwu7ODi2nGE843ndua9z73mfs8%2Fe%2FVAVER4mRM6Y%2F7ejvXT001p7r%2FXXAn5HTXqeOeW4i3ccOkSwg6K%2FS%2FCEbe89ODn25Mk3Lp6fGS8%2FsZOg%2FDcdzDQapEiSecN27rd9917O%2BRFK6eLhQ7v82TkfxXL5%2Bdv3NdaeXxp87aaANg1jn2k7f%2Bl4tbc3JsYPE0YJRQPcYZBpHy%2BuB5ie8nBwYcroBPEdNwV0xm28Y2rf3lNKZwYAaK1BCIFrGYiRgzOC3VM%2BKqJhUArb5Ltvyh11xmofqKrUUFUFrRS01ijLEsOwDZ2GMLTGeKsG1xRQlcauZu3YoYOT5o5ntKqqspTlz78ZZeCcg4CgYQFTTQ%2BV1iilgmUK2KZRH6zHPoDOjoImQfhpZtCtoiy20jAqZZp%2FpDnuTY3VPdQbDTQaDvrDGJbpI41KpEX5RDuKOjue0XYWXmivhn8NAHsmp4ii0fG5mdbbPNtGo%2BVDVQq%2B50JVCrWagctL25dveh%2B92t7SU7vGB0Jw%2BL4LWSnkhUSlFLb7EaTS4AnZ9YbFmUf%2F6J4997%2FaoOx6h9P1xj0HDux%2BPRMUrmOhUhUoAVzXAqcUt8w2j%2B1baJ48t5ocfs18A1c2%2Bj%2B%2BKZMpjYsrrusgSQpIqSAER6U1ttoBilIhKjRW2hnuPTx1bFjG2U0bocduOyq8MQ9Tsy2sXesCALJCwvMcJIUEAcVmVEEwijL33rAwMUFvSultwcfTLH1vkqZ0cqIJQhQEZ1AaSLMK64MYC3UDpkUxTNRRy6tWr20Mz%2B846OSY%2F9FmyztuGTam5qcwGg7Q64cwuAHT5FhouSgU0A0lXC5Yc6z20GzTmA1H8okoL6odA23UnHc3fP%2FOmblZdLY2YBgUsqKoFIFlUQziCmWusDrIMOsLTLdsYhv2XaUBN%2B4kz6aVzHcElMhqaXZm9n2jqG8KxkCphsEo8ixFAYat7QyuqcA1xWTLhs0FpAaxqH3iziOt961uRFu%2BYa1Gef4rwC3LeuDYvsmjSaKWfMdmNmO7k7IMXhGoaxjZ%2FNz0Y%2F3egDPBQDQQpQqmbWIQxFiYcGBZHL5nIkg0HItimEtYSmNhrl43DP%2Bdi%2FO1P98zOeZVedWipcobnhdaUn3uTa%2Fb85jtigdL4Z24%2F66Zvw9keZwW5JtRUchfm7Trge5xxz919x8e%2FYJGBQ2Fhbl5dNsrsG0DWmskSQ7HNbDZTuBYDlxLQVGGls3heRRnznVx20Ef212J%2BSkDl1ZCUKoGt0z7jc5QYs%2B0iysbAXaP1dDNSvSC0U%2FOLHe%2FiCA%2FtdLt6JdlnBfnZ1nDdO7TBGBcgBGKpChRlAJlmUKYJgzz%2F4xTmCl4Voq0ckArDdQAVWnUxixUEuAMYJxj77SPiqExGJVwXI6r10KMjxnoBzEqRrBnonl0bSC%2FGrFtoIuvv6zS90ehHndqf9IYr9%2FmOC6KqkAaZSACWL66DWraCDMFV1CUeYy67yIpKFSZgjCBTj%2BCY9nIFYFtcRgGwcr6ELbBsBYUMAmDsBiyHPAbFrpDibyUqFFB6uP%2Bnw7jittK%2FzAuS%2Flb7ygv1bOyVG%2Bt1ewWYxxcUAhhwGAUUy0BAxJZKQGiUZQcjsng2hSjTIMqCWEaMASw1i1hMIZBDnCtYFkmhlEBThS2gxRplKI9yjFKKAyXIQ4LKoX%2Fplzmj5iyOpdIuXz9hm9wlcajx9Y32%2B7czCwMW6AqFYIkgdYUJicQnCLNcxjmJJotA3EmUUoFAcC0GNICMA2Ffh8oFDAzPweLe5BMY3JmDkE0wkYv0IN%2BcHF9K7wcVcxNSuJoDdiu54GLd5sUF%2Fn1QCtZ7fUbniMs4PTpM7jzrtvQDQbY5Vvg3MR2DEzXKZIMqPsU49O7sXT1LDxXIY4rCEcgGMQgVg2jLIFXc9De7kGWFYpSoSjb6Afxt9Y3e09mcfnP7TDMs3jQEoZ9WDjuCUKwGAe9Fxih%2F33dV79%2FovEP7pjzEa2BXhAiGSSFaVvsxN1HWN3jqKhCFpYIRhJze6ex1Q7QrNsY9rcBbqLm2jCogtQSRcmQZwCzOYqkRC8Mnu9sdj40CqKfdNJ09IpNyS7LOkw4%2FUCYZGBQaNZtTSz2nlZr%2BqKwBa52UxiEAtAYG28ClKHh11ARQEsFr8ZRZSkGUQkNC4xKEKLR7Q%2F0xReX%2FuVnl1f%2BYGmz8%2FTLgbxuezId782DLDMpZXCYRFRk35irNdNDByeOOAZBw9aglAJMg0AjDhKAalSywjDK0JxowHAoGhZHFGcoNMPpZ557SlX4T6fm%2FtN2HMc3xOY98NYHH67vamF%2B%2BgBuOfZ6pUvnS4WgX67XBBgDykogywu88LNVZEmBMI0ATSCEQHPXJAbDGKmkCKMCFTS2N9tdbpnvCSr5hY3hsHvDZn2dNAf7jhx41%2FnT%2F5X2Nq997C8%2B%2BNE7V4dX1FTNPVBKCVCOpaurGAUJrq1tgmgObjD0giEuXbiip2emCScalmWAC4GN3vDUldXtr97wlc6ljae%2B%2Fdo%2F%2FtRXjEn%2FB6tr%2FW9Uyr1bK7K50e6%2FbhjG21FU7E6KwnccG5wXWGuv4MqLLy5bjnNSZsVMrxM8%2Fpo7DplF3oOCRpAGF14V9xQnCr3V5e9evbb1UwB46pnH1zfWOmd0Is9sdqPPDvpBaBr0pOCMCMFRSImy0I90s%2ByZVFUrUX9wqV6zHzYEIYbBECdZem0zOPWq2LzecPirozVJV6Mir2qmdZ5Tcqsh%2BK2MUwJoFKn6j7iS%2FwMAmVIXRVnuG2%2F6d1i2gShN%2FbCXfut6Vu6GrR1%2FUZ0kyRlz3x%2BOsu9EWQEl9YgL6v9izNZg9LE8k%2BsA4LvODLSe35H96C9rqbOVxVlJRqlEpx%2F%2Fm6nsf31JRfK8s7K0%2FdiV5Q4uX%2BuuMiHOvSql%2F3U6NHbg%2BCMf%2F%2FD3ha33Dlc39xPbfFRVKuSaPrSejsJfji9l2dfCebQCkXmY%2FF1UFDf21f8m3Xrk9ocvXHpubXt5%2FRO8ZkNrDWiIqqqOAjj9%2F3EP3%2FfO44fvPfxnjz%2Fx709GnRCaoskNUQMQ7kjpe8Xo7NLl5bOddhdMCDDBoZLyb8fq00%2B%2FxHi%2Fdv%2Fnn%2F%2FxuROO4Z4CAQgISeJoYUdKf2v90P57Hrrvi%2Bd%2F9MxbiCYEWmW60oWW5Wc2wv7GS3ZXL7xwId1SMjeS%2B2UhIYRAofPnwyg7i983ffxvPrn1wINv1LfvO6A%2F%2BFeP6P2LC%2F94wyfTjdCZHz598tKFs8P58uDiKBntH3X633ul%2F%2FpfnXnOL3Bt9XMAAAAASUVORK5CYII%3D">](https://github.com/ublue-os/aurora)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/a940189170c8456c85a75ea36edb32c7)](https://app.codacy.com/gh/hanthor/aurora-lts/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![LTS Images](https://github.com/ublue-os/aurora/actions/workflows/build-regular.yml/badge.svg)](https://github.com/ublue-os/aurora/actions/workflows/build-regular.yml) [![Latest Images](https://github.com/ublue-os/aurora/actions/workflows/build-image-latest-main.yml/badge.svg)](https://github.com/ublue-os/aurora/actions/workflows/build-image-latest-main.yml) [![Beta Images](https://github.com/ublue-os/aurora/actions/workflows/build-image-beta.yml/badge.svg)](https://github.com/ublue-os/aurora/actions/workflows/build-image-beta.yml) [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ublue-os/aurora-docs)
 
-Larger, more lethal [Aurora](https://projectaurora.io). `aurora:lts` is built on CentOS Stream 10.
+[![LFX Active Contributors](https://insights.linuxfoundation.org/api/badge/active-contributors?project=aurora&repos=https://github.com/hanthor/aurora-lts)](https://insights.linuxfoundation.org/project/aurora)
 
-![image](https://github.com/user-attachments/assets/2e160934-44e6-4aee-b2b8-accb3bcf0a41)
+[<img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/ublue-os/countme/main/badge-endpoints/aurora.json&label=Weekly%20Device%20Counts&logo=data:image/png;base64,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">](https://github.com/ublue-os/aurora)
 
-## Instructions
+![aurora](https://github.com/user-attachments/assets/269bda65-665a-4232-96e5-b165ab846e9a)
 
-Check [the documentation](https://docs.projectaurora.io/lts) for the latest instructions.
+Aurora is a delightful KDE desktop experience for end-users that are looking for reliability and developers for the most-hassle free setup. Zero maintenance included.
 
-## Metrics
+- [Download Aurora](https://getaurora.dev)
 
-![Alt](https://repobeats.axiom.co/api/embed/3e29c59ccd003fe1939ce0bdfccdee2b14203541.svg "Repobeats analytics image")
+## Documentation
+
+1. [Discussions and Announcements](https://universal-blue.discourse.group/c/aurora/11) - strongly recommended!
+2. [Documentation](https://docs.getaurora.dev/)
+3. [Contributing Guide](https://universal-blue.org/contributing.html)
+4. [Local Building Guide](https://docs.getaurora.dev/guides/building)
+
+### Secure Boot
+
+Secure Boot is supported by default on our systems, providing an additional layer of security. After the first installation, you will be prompted to enroll the secure boot key in the BIOS.
+
+Enter the password `universalblue`
+when prompted to enroll our key.
+
+If this step is not completed during the initial setup, you can manually enroll the key by running the following command in the terminal:
+
+`
+ujust enroll-secure-boot-key
+`
+
+Secure boot is supported with our custom key. The pub key can be found in the root of the akmods repository [here](https://github.com/ublue-os/akmods/raw/main/certs/public_key.der).
+If you'd like to enroll this key prior to installation or rebase, download the key and run the following:
+
+```bash
+sudo mokutil --timeout -1
+sudo mokutil --import public_key.der
+```
+
+## Repobeats
+
+![Alt](https://repobeats.axiom.co/api/embed/c86e98a6654e55f789375ff210dd4eb95f757906.svg "Repobeats analytics image")
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ublue-os/aurora&type=Date)](https://www.star-history.com/#ublue-os/aurora&Date)
