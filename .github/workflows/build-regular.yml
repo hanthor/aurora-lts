@@ -1,11 +1,14 @@
 name: Build Aurora LTS
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
   schedule:
-    - cron: "0 1 * * TUE" # Every Tuesday at 1am UTC
+    - cron: "0 1 * * TUE" # Every Tuesday at 1am UTC
   merge_group:
   workflow_dispatch:
 
