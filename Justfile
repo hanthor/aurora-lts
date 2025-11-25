@@ -4,7 +4,6 @@ export centos_version := env("CENTOS_VERSION", "stream10")
 export default_tag := env("DEFAULT_TAG", "lts")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 export coreos_stable_version := env("COREOS_STABLE_VERSION", "42")
-just := just_executable()
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -17,8 +16,8 @@ default: build-rechunk
 check:
     #!/usr/bin/env bash
     find . -type f -name "*.just" | while read -r file; do
-    	echo "Checking syntax: $file"
-    	just --unstable --fmt --check -f $file
+            echo "Checking syntax: $file"
+            just --unstable --fmt --check -f $file
     done
     echo "Checking syntax: Justfile"
     just --unstable --fmt --check -f Justfile
@@ -28,8 +27,8 @@ check:
 fix:
     #!/usr/bin/env bash
     find . -type f -name "*.just" | while read -r file; do
-    	echo "Checking syntax: $file"
-    	just --unstable --fmt -f $file
+            echo "Checking syntax: $file"
+            just --unstable --fmt -f $file
     done
     echo "Checking syntax: Justfile"
     just --unstable --fmt -f Justfile || { exit 1; }
@@ -49,7 +48,19 @@ clean:
 [group('Utility')]
 [private]
 sudo-clean:
-    just sudoif just clean
+    #!/usr/bin/env bash
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+    sudoif {{ just_executable() }} clean
 
 # sudoif bash function
 [group('Utility')]
@@ -69,30 +80,10 @@ sudoif command *args:
     }
     sudoif {{ command }} {{ args }}
 
-# This Justfile recipe builds a container image using Podman.
-#
-# Arguments:
-#   $target_image - The tag you want to apply to the image (default: bluefin).
-#   $tag - The tag for the image (default: lts).
-#   $gdx - Enable GDX (default: "0").
-#
-# GDX: https://docs.projectbluefin.io/gdx/
-#   GPU Developer Experience (GDX) creates a base as an AI and Graphics platform.
-#   Installs Nvidia drivers, CUDA, and other tools.
-#
-# The script constructs the version string using the tag and the current date.
-# If the git working directory is clean, it also includes the short SHA of the current HEAD.
-#
-#
-# Example usage:
-#   just build bluefin lts 1 0
-#
-# This will build an image 'bluefin:lts' with GDX enabled.
-#
-
 # Build the image using the specified parameters
 build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     #!/usr/bin/env bash
+    set -euo pipefail
 
     # Get Version
     ver="${tag}-${centos_version}.$(date +%Y%m%d)"
@@ -114,7 +105,20 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     fi
 
     echo "Building image ${target_image}:${tag} with args: ${BUILD_ARGS[*]}"
-    just sudoif podman build \
+    
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+    
+    sudoif podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \
@@ -129,8 +133,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
 #
 # Example usage:
 #   just rechunk bluefin lts
-
-# just rechunk bluefin lts lts-optimized
+#   just rechunk bluefin lts lts-optimized
 rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
     #!/usr/bin/env bash
     set -euo pipefail
@@ -141,10 +144,22 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     dst="localhost/{{ src_image }}:{{ dst_tag }}"
     src=""
 
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+
     # 1. Check root's storage for the image.
-    if {{ just }} sudoif podman image exists "${local_src}"; then
+    if sudoif podman image exists "${local_src}"; then
         src="${local_src}"
-    elif {{ just }} sudoif podman image exists "${remote_src}"; then
+    elif sudoif podman image exists "${remote_src}"; then
         src="${remote_src}"
     else
         echo "Error: Image not found in root storage: {{ src_image }}:{{ src_tag }} (or localhost prefixed)." >&2
@@ -158,7 +173,7 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
         --privileged
         --pull=never
         --security-opt=label=disable
-        -v /var/lib/containers:/var/lib/containers:Z
+        -v /var/lib/containers:/var/lib/containers
         --entrypoint=/usr/libexec/bootc-base-imagectl
     )
 
@@ -168,15 +183,15 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     # Use the source image as the rechunk image
     args_podman+=("${src}")
 
-    {{ just }} sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
+    sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
 
     # Verify the rechunked image was created
-    if {{ just }} sudoif podman image exists "${dst}"; then
+    if sudoif podman image exists "${dst}"; then
         echo "Rechunked image successfully created: ${dst}"
     else
         echo "Warning: Rechunked image not found at expected location: ${dst}"
         echo "Available images:"
-        {{ just }} sudoif podman images
+        sudoif podman images
         exit 1
     fi
 
@@ -190,35 +205,8 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
 #
 # Example usage:
 #   just build-rechunk
-
-# just build-rechunk bluefin lts 0 0
+#   just build-rechunk bluefin lts 0 0
 build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (build target_image tag gdx hwe) && (rechunk target_image tag)
-
-# Command: _rootful_load_image
-# Description: This script checks if the current user is root or running under sudo. If not, it attempts to resolve the image tag using podman inspect.
-#              If the image is found, it loads it into rootful podman. If the image is not found, it pulls it from the repository.
-#
-# Parameters:
-#   $target_image - The name of the target image to be loaded or pulled.
-#   $tag - The tag of the target image to be loaded or pulled. Default is 'default_tag'.
-#
-# Example usage:
-#   _rootful_load_image my_image latest
-#
-# Steps:
-# 1. Check if the script is already running as root or under sudo.
-# 2. Check if target image is in the non-root podman container storage)
-# 3. If the image is found, load it into rootful podman using podman scp.
-# 4. If the image is not found, pull it from the remote repository into reootful podman.
-
-rootful_load_image $target_image=image_name $tag=default_tag:
-    #!/usr/bin/env bash
-    set -eoux pipefail
-
-    # Check if image exists in rootful storage, if not, pull it.
-    if ! just sudoif podman image exists "${target_image}:${tag}"; then
-        just sudoif podman pull "${target_image}:${tag}"
-    fi
 
 # Build a bootc bootable image using Bootc Image Builder (BIB)
 # Converts a container image to a bootable image
@@ -227,8 +215,8 @@ rootful_load_image $target_image=image_name $tag=default_tag:
 #   tag: The tag of the image to build (ex. latest)
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (default: image.toml)
-
-# Example: just _rebuild-bib localhost/fedora latest qcow2 image.toml
+#
+# Example: just _build-bib localhost/fedora latest qcow2 image.toml
 _build-bib $target_image $tag $type $config:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -249,7 +237,19 @@ _build-bib $target_image $tag $type $config:
       args+=" --local"
     fi
 
-    just sudoif podman run \
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+
+    sudoif podman run \
       --rm \
       -it \
       --privileged \
@@ -271,7 +271,7 @@ _build-bib $target_image $tag $type $config:
 #   tag: The tag of the image to build (ex. latest)
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (deafult: image.toml)
-
+#
 # Example: just _rebuild-bib localhost/fedora latest qcow2 image.toml
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
 
@@ -312,7 +312,7 @@ _run-vm $target_image $tag $type $config:
 
     # Build the image if it does not exist
     if [[ ! -f "${image_file}" ]]; then
-        just "build-${type}" "$target_image" "$tag"
+        {{ just_executable() }} "build-${type}" "$target_image" "$tag"
     fi
 
     # Determine an available port to use
@@ -337,8 +337,20 @@ _run-vm $target_image $tag $type $config:
     run_args+=(--volume "${PWD}/${image_file}":"/boot.${type}")
     run_args+=(docker.io/qemux/qemu)
 
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+
     # Run the VM and open the browser to connect
-    just sudoif podman run "${run_args[@]}" &
+    sudoif podman run "${run_args[@]}" &
     xdg-open http://localhost:${port}
     fg "%podman"
 
@@ -361,7 +373,7 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
 
     set -euo pipefail
 
-    [ "{{ rebuild }}" -eq 1 ] && echo "Rebuilding the ISO" && just build-vm {{ rebuild }} {{ type }}
+    [ "{{ rebuild }}" -eq 1 ] && echo "Rebuilding the ISO" && {{ just_executable() }} build-vm {{ rebuild }} {{ type }}
 
     systemd-vmspawn \
       -M "achillobator" \
@@ -372,16 +384,7 @@ spawn-vm rebuild="0" type="qcow2" ram="6G":
       --vsock=false --pass-ssh-key=false \
       -i ./output/**/*.{{ type }}
 
-##########################
-#  'customize-iso-build' #
-##########################
-# Description:
 # Enables the manual customization of the osbuild manifest before running the ISO build
-#
-# Mount the configuration file and output directory
-# Clear the entrypoint to run the custom command
-
-# Run osbuild with the specified parameters
 customize-iso-build:
     sudo podman run \
     --rm -it \
@@ -396,22 +399,22 @@ customize-iso-build:
     "${bib_image}" \
     osbuild --store /store --output-directory /output /output/manifest-iso.json --export bootiso
 
-##########################
-#  'patch-iso-branding'  #
-##########################
-# Description:
-# creates a custom branded ISO image. As per https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/anaconda_customization_guide/sect-iso-images#sect-product-img
-# Parameters:
-#   override: A flag to determine if the final ISO should replace the original ISO (default is 0).
-#   iso_path: The path to the original ISO file.
-# Runs a Podman container with Fedora image. Installs 'lorax' and 'mkksiso' tools inside the container. Creates a compressed 'product.img'
-# from the Brnading images in the 'iso_files' directory. Uses 'mkksiso' to add the 'product.img' to the original ISO and creates 'final.iso'
-# in the output directory. If 'override' is not 0, replaces the original ISO with the newly created 'final.iso'.
-
 # applies custom branding to an ISO image.
 patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
     #!/usr/bin/env bash
-    just sudoif podman run \
+    function sudoif(){
+        if [[ "${UID}" -eq 0 ]]; then
+            "$@"
+        elif [[ "$(command -v sudo)" && -n "${SSH_ASKPASS:-}" ]] && [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
+            /usr/bin/sudo --askpass "$@" || exit 1
+        elif [[ "$(command -v sudo)" ]]; then
+            /usr/bin/sudo "$@" || exit 1
+        else
+            exit 1
+        fi
+    }
+    
+    sudoif podman run \
         --rm \
         -it \
         --pull=newer \
@@ -420,7 +423,7 @@ patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
         -v ./iso_files:/iso_files \
         quay.io/centos/centos:stream10 \
         bash -c 'dnf install -y lorax && \
-    	mkdir /images && cd /iso_files/product && find . | cpio -c -o | gzip -9cv > /images/product.img && cd / \
+            mkdir /images && cd /iso_files/product && find . | cpio -c -o | gzip -9cv > /images/product.img && cd / \
             && mkksiso --add images --volid bluefin-boot /{{ iso_path }} /output/final.iso'
 
     if [ {{ override }} -ne 0 ] ; then
