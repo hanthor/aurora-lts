@@ -135,17 +135,38 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     #!/usr/bin/env bash
     set -euo pipefail
 
-    local_src="localhost/${src_image}:${src_tag}"
-    remote_src="${src_image}:${src_tag}"
+    local_src="localhost/{{ src_image }}:{{ src_tag }}"
+    remote_src="{{ src_image }}:{{ src_tag }}"
+    dst="{{ src_image }}:{{ dst_tag }}"
+    src=""
 
-    # Check if the local image exists
-    if podman image inspect "${local_src}" > /dev/null 2>&1; then
+    # 1. Check user's storage
+    if podman image exists "${local_src}"; then
         src="${local_src}"
-    else
+    elif podman image exists "${remote_src}"; then
         src="${remote_src}"
     fi
 
-    dst="${src_image}:${dst_tag}"
+    # 2. If user has the image, ensure root also has it.
+    if [[ -n "${src}" ]]; then
+        if ! {{ just }} sudoif podman image exists "${src}"; then
+            echo "Copying '${src}' to root's container storage using save/load..."
+            if ! podman save "${src}" | {{ just }} sudoif podman load; then
+                echo "Error: Failed to copy image to root's storage." >&2
+                exit 1
+            fi
+        fi
+    # 3. If user doesn't have it, check root's storage directly.
+    else
+        if {{ just }} sudoif podman image exists "${local_src}"; then
+            src="${local_src}"
+        elif {{ just }} sudoif podman image exists "${remote_src}"; then
+            src="${remote_src}"
+        else
+            echo "Error: Image not found locally: {{ src_image }}:{{ src_tag }} (or localhost prefixed) for both user and root." >&2
+            exit 1
+        fi
+    fi
 
     echo "Rechunking ${src} -> ${dst}"
 
