@@ -8,7 +8,7 @@ FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 # Merge system files 
 FROM alpine:latest AS context
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /system_files /aurora-files
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /system_files/shared /aurora-files
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /brew /brew
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /just /just
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /flatpaks /flatpaks
@@ -24,7 +24,9 @@ RUN apk add --no-cache rsync && \
     rsync -av /aurora-files/ /files/ && \
     rsync -av /lts-files/ /files/ && \
     find /just -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >> /files/usr/share/ublue-os/just/60-custom.just && \
-    cp /brew/*.Brewfile /files/usr/share/ublue-os/homebrew/
+    cp /brew/*.Brewfile /files/usr/share/ublue-os/homebrew/ && \
+    tree /files && \
+    ls -lah /files/usr/lib/systemd/system/
 
 # Final image
 FROM quay.io/centos-bootc/centos-bootc:$MAJOR_VERSION
