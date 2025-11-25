@@ -129,7 +129,8 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
 #
 # Example usage:
 #   just rechunk bluefin lts
-#   just rechunk bluefin lts lts-optimized
+
+# just rechunk bluefin lts lts-optimized
 rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
     #!/usr/bin/env bash
     set -euo pipefail
@@ -157,7 +158,7 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
         --privileged
         --pull=never
         --security-opt=label=disable
-        -v /var/lib/containers:/var/lib/containers
+        -v /var/lib/containers:/var/lib/containers:Z
         --entrypoint=/usr/libexec/bootc-base-imagectl
     )
 
