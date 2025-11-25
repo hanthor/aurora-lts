@@ -193,8 +193,8 @@ jobs:
         id: push
         run: |
           IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}"
-          # Get digest from the local image that was just pushed
-          DIGEST=$(podman inspect --format '{{.Digest}}' "${IMAGE}")
+          # Get digest from the remote image that was just pushed
+          DIGEST=$(skopeo inspect --format '{{.Digest}}' "docker://${IMAGE}")
           echo "remote_image_digest=${DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Setup Syft
