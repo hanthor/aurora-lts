@@ -105,7 +105,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     fi
 
     echo "Building image ${target_image}:${tag} with args: ${BUILD_ARGS[*]}"
-    
+
     function sudoif(){
         if [[ "${UID}" -eq 0 ]]; then
             "$@"
@@ -117,7 +117,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
             exit 1
         fi
     }
-    
+
     sudoif podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
@@ -133,7 +133,8 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
 #
 # Example usage:
 #   just rechunk bluefin lts
-#   just rechunk bluefin lts lts-optimized
+
+# just rechunk bluefin lts lts-optimized
 rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
     #!/usr/bin/env bash
     set -euxo pipefail
@@ -207,7 +208,8 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
 #
 # Example usage:
 #   just build-rechunk
-#   just build-rechunk bluefin lts 0 0
+
+# just build-rechunk bluefin lts 0 0
 build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (build target_image tag gdx hwe) && (rechunk target_image tag)
 
 # Build a bootc bootable image using Bootc Image Builder (BIB)
@@ -218,6 +220,7 @@ build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (buil
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (default: image.toml)
 #
+
 # Example: just _build-bib localhost/fedora latest qcow2 image.toml
 _build-bib $target_image $tag $type $config:
     #!/usr/bin/env bash
@@ -274,6 +277,7 @@ _build-bib $target_image $tag $type $config:
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (deafult: image.toml)
 #
+
 # Example: just _rebuild-bib localhost/fedora latest qcow2 image.toml
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
 
@@ -415,7 +419,7 @@ patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
             exit 1
         fi
     }
-    
+
     sudoif podman run \
         --rm \
         -it \
