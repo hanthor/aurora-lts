@@ -7,8 +7,29 @@ FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
 FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 FROM scratch AS context
 
+# Copy local system files first (LTS-specific overrides)
 COPY system_files /files
+
+# Copy shared configuration from common OCI image
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /files
+
+# Copy Aurora-specific configuration from aurora-oci image
+# System files go to /files (will be copied to / by build scripts)
+COPY --from=ghcr.io/projectbluefin/aurora-oci:latest /system_files /files
+
+# Brew files need to be accessible at /brew for build scripts
+COPY --from=ghcr.io/projectbluefin/aurora-oci:latest /brew /brew
+
+# Flatpak lists need to be accessible at /flatpaks for build scripts
+COPY --from=ghcr.io/projectbluefin/aurora-oci:latest /flatpaks /flatpaks
+
+# Just files need to be accessible at /just for build scripts
+COPY --from=ghcr.io/projectbluefin/aurora-oci:latest /just /just
+
+# Logos need to be accessible at /logos for branding scripts
+COPY --from=ghcr.io/projectbluefin/aurora-oci:latest /logos /logos
+
+# Copy LTS-specific overrides last (highest priority)
 COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
 
