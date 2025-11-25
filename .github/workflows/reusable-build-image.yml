@@ -384,7 +384,7 @@ jobs:
           PLATFORMS: "${{ inputs.platforms }}"
         run: |
           MANIFEST="${IMAGE_REGISTRY}/${IMAGE_NAME}"
-          sudo podman manifest create "${MANIFEST}"
+          podman manifest create "${MANIFEST}"
           
           # Add platform images to manifest
           platforms=()
@@ -392,7 +392,7 @@ jobs:
           for platform in "${platforms[@]}"; do
             digest="$(echo $DIGESTS_JSON | jq -r ".$platform")"
             echo "Adding ${IMAGE_REGISTRY}/${IMAGE_NAME}@${digest} for ${platform}"
-            sudo podman manifest add "${MANIFEST}" "${IMAGE_REGISTRY}/${IMAGE_NAME}@${digest}" --arch "${platform}"
+            podman manifest add "${MANIFEST}" "${IMAGE_REGISTRY}/${IMAGE_NAME}@${digest}" --arch "${platform}"
           done
           
           # Apply labels to manifest
@@ -405,7 +405,7 @@ jobs:
       - name: Login to GitHub Container Registry
         if: ${{ inputs.publish }}
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login -u "${{ github.actor }}" --password-stdin ghcr.io
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login -u "${{ github.actor }}" --password-stdin ghcr.io
 
       - name: Push Manifest
         if: github.event_name != 'pull_request'
@@ -415,7 +415,7 @@ jobs:
           TAGS: ${{ steps.metadata.outputs.tags }}
         run: |
           while IFS= read -r tag; do
-            sudo podman manifest push --all=false --digestfile=/tmp/digestfile \
+            podman manifest push --all=false --digestfile=/tmp/digestfile \
               "${MANIFEST}" "${IMAGE_REGISTRY}/${IMAGE_NAME}:${tag}"
           done <<< "$TAGS"
           
