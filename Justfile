@@ -135,7 +135,16 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     #!/usr/bin/env bash
     set -euo pipefail
 
-    src="${src_image}:${src_tag}"
+    local_src="localhost/${src_image}:${src_tag}"
+    remote_src="${src_image}:${src_tag}"
+
+    # Check if the local image exists
+    if podman image inspect "${local_src}" > /dev/null 2>&1; then
+        src="${local_src}"
+    else
+        src="${remote_src}"
+    fi
+
     dst="${src_image}:${dst_tag}"
 
     echo "Rechunking ${src} -> ${dst}"
