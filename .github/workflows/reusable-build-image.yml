@@ -397,7 +397,7 @@ jobs:
           
           # Apply labels to manifest
           while IFS= read -r label; do
-            sudo podman manifest annotate --index --annotation "$label" "${MANIFEST}"
+            podman manifest annotate --index --annotation "$label" "${MANIFEST}"
           done <<< "${LABELS}"
           
           echo "MANIFEST=${MANIFEST}" >> $GITHUB_OUTPUT
