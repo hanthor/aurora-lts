@@ -18,10 +18,11 @@ COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
 
 # Merge
-RUN mkdir -p /files/usr/share/ublue-os/just /files/usr/share/ublue-os/homebrew && \
-    cp -av /common-files/. /files/ && \
-    cp -av /aurora-files/. /files/ && \
-    cp -av /lts-files/. /files/ && \
+RUN apk add --no-cache rsync && \
+    mkdir -p /files/usr/share/ublue-os/just /files/usr/share/ublue-os/homebrew && \
+    rsync -av /common-files/ /files/ && \
+    rsync -av /aurora-files/ /files/ && \
+    rsync -av /lts-files/ /files/ && \
     find /just -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >> /files/usr/share/ublue-os/just/60-custom.just && \
     cp /brew/*.Brewfile /files/usr/share/ublue-os/homebrew/
 
