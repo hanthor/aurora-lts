@@ -4,6 +4,7 @@ export centos_version := env("CENTOS_VERSION", "stream10")
 export default_tag := env("DEFAULT_TAG", "lts")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 export coreos_stable_version := env("COREOS_STABLE_VERSION", "42")
+just := just_executable()
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -154,7 +155,7 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     # Use the source image as the rechunk image
     args_podman+=("${src}")
 
-    just sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
+    {{ just }} sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
 
     echo "Rechunked image available as: ${dst}"
 

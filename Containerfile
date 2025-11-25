@@ -47,5 +47,3 @@ RUN --mount=type=tmpfs,dst=/opt \
     --mount=type=bind,from=context,source=/,target=/run/context \
     /run/context/build_scripts/build.sh
 
-# Make /opt writeable by default
-RUN rm -rf /opt && ln -s /var/opt /opt
