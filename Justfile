@@ -114,7 +114,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     fi
 
     echo "Building image ${target_image}:${tag} with args: ${BUILD_ARGS[*]}"
-    podman build \
+    just sudoif podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \
@@ -140,32 +140,14 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
     dst="{{ src_image }}:{{ dst_tag }}"
     src=""
 
-    # 1. Check user's storage
-    if podman image exists "${local_src}"; then
+    # 1. Check root's storage for the image.
+    if {{ just }} sudoif podman image exists "${local_src}"; then
         src="${local_src}"
-    elif podman image exists "${remote_src}"; then
+    elif {{ just }} sudoif podman image exists "${remote_src}"; then
         src="${remote_src}"
-    fi
-
-    # 2. If user has the image, ensure root also has it.
-    if [[ -n "${src}" ]]; then
-        if ! {{ just }} sudoif podman image exists "${src}"; then
-            echo "Copying '${src}' to root's container storage using save/load..."
-            if ! podman save "${src}" | {{ just }} sudoif podman load; then
-                echo "Error: Failed to copy image to root's storage." >&2
-                exit 1
-            fi
-        fi
-    # 3. If user doesn't have it, check root's storage directly.
     else
-        if {{ just }} sudoif podman image exists "${local_src}"; then
-            src="${local_src}"
-        elif {{ just }} sudoif podman image exists "${remote_src}"; then
-            src="${remote_src}"
-        else
-            echo "Error: Image not found locally: {{ src_image }}:{{ src_tag }} (or localhost prefixed) for both user and root." >&2
-            exit 1
-        fi
+        echo "Error: Image not found in root storage: {{ src_image }}:{{ src_tag }} (or localhost prefixed)." >&2
+        exit 1
     fi
 
     echo "Rechunking ${src} -> ${dst}"
@@ -224,29 +206,8 @@ rootful_load_image $target_image=image_name $tag=default_tag:
     #!/usr/bin/env bash
     set -eoux pipefail
 
-    # Check if already running as root or under sudo
-    if [[ -n "${SUDO_USER:-}" || "${UID}" -eq "0" ]]; then
-        echo "Already root or running under sudo, no need to load image from user podman."
-        exit 0
-    fi
-
-    # Try to resolve the image tag using podman inspect
-    set +e
-    resolved_tag=$(podman inspect -t image "${target_image}:${tag}" | jq -r '.[].RepoTags.[0]')
-    return_code=$?
-    set -e
-
-    if [[ $return_code -eq 0 ]]; then
-        # If the image is found, load it into rootful podman
-        ID=$(just sudoif podman images --filter reference="${target_image}:${tag}" --format "'{{ '{{.ID}}' }}'")
-        if [[ -z "$ID" ]]; then
-            # If the image ID is not found, copy the image from user podman to root podman
-            COPYTMP=$(mktemp -p "${PWD}" -d -t _build_podman_scp.XXXXXXXXXX)
-            just sudoif TMPDIR=${COPYTMP} podman image scp ${UID}@localhost::"${target_image}:${tag}" root@localhost::"${target_image}:${tag}"
-            rm -rf "${COPYTMP}"
-        fi
-    else
-        # If the image is not found, pull it from the repository
+    # Check if image exists in rootful storage, if not, pull it.
+    if ! just sudoif podman image exists "${target_image}:${tag}"; then
         just sudoif podman pull "${target_image}:${tag}"
     fi
 
@@ -368,7 +329,7 @@ _run-vm $target_image $tag $type $config:
     run_args+=(docker.io/qemux/qemu)
 
     # Run the VM and open the browser to connect
-    podman run "${run_args[@]}" &
+    just sudoif podman run "${run_args[@]}" &
     xdg-open http://localhost:${port}
     fg "%podman"
 
@@ -441,7 +402,7 @@ customize-iso-build:
 # applies custom branding to an ISO image.
 patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
     #!/usr/bin/env bash
-    podman run \
+    just sudoif podman run \
         --rm \
         -it \
         --pull=newer \
