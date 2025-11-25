@@ -2,12 +2,16 @@
 
 set -xeuo pipefail
 
-# Fancy CentOS icon on the fastfetch
-sed -i "s/󰣛//g" /usr/share/ublue-os/fastfetch.jsonc
+# Fancy CentOS icon on the fastfetch (only if file exists)
+if [ -f /usr/share/ublue-os/fastfetch.jsonc ]; then
+  sed -i "s/󰣛//g" /usr/share/ublue-os/fastfetch.jsonc
+fi
 
 # Fix 1969 date getting returned on Fastfetch (upstream issue)
 # FIXME: check if this issue is fixed upstream at some point. (28-02-2025) https://github.com/ostreedev/ostree/issues/1469
-sed -i -e "s@ls -alct /@&var/log@g" /usr/share/ublue-os/fastfetch.jsonc
+if [ -f /usr/share/ublue-os/fastfetch.jsonc ]; then
+  sed -i -e "s@ls -alct /@&var/log@g" /usr/share/ublue-os/fastfetch.jsonc
+fi
 
 # Add Flathub by default
 mkdir -p /etc/flatpak/remotes.d
