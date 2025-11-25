@@ -1,0 +1,89 @@
+ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
+ARG BASE_IMAGE_SHA="${BASE_IMAGE_SHA:-sha256-feea845d2e245b5e125181764cfbc26b6dacfb3124f9c8d6a2aaa4a3f91082ed}"
+ARG ENABLE_HWE="${ENABLE_HWE:-0}"
+ARG AKMODS_VERSION="${AKMODS_VERSION:-centos-10}"
+
+# Upstream mounts akmods-zfs and akmods-nvidia-open; select their tag via AKMODS_VERSION
+FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
+FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
+
+# MERGE STAGE: Merge files from multiple sources in the correct priority order
+FROM alpine:latest AS merger
+
+# Copy each source to separate directories
+COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /system_files /aurora-files
+COPY system_files /lts-files
+
+# Merge in priority order: common -> aurora -> lts (lts has highest priority)
+RUN echo "=== MERGING FILES ===" && \
+  mkdir -p /merged-files && \
+  echo "Step 1: Copying from common..." && \
+  cp -av /common-files/. /merged-files/ 2>&1 | head -10 && \
+  echo "Step 2: Copying from aurora-oci (overwrites common on conflict)..." && \
+  cp -av /aurora-files/. /merged-files/ 2>&1 | head -10 && \
+  echo "Step 3: Copying from lts-local (overwrites all on conflict)..." && \
+  cp -av /lts-files/. /merged-files/ 2>&1 | head -10 && \
+  echo "=== MERGE COMPLETE ===" && \
+  echo "Total files: $(find /merged-files -type f | wc -l)"
+
+# CONTEXT STAGE: Prepare final context with merged files
+FROM scratch AS context
+
+# Copy merged system files
+COPY --from=merger /merged-files /files
+
+# Copy other resources from aurora-oci (no conflicts)
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /brew /brew
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /flatpaks /flatpaks
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /just /just
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /logos /logos
+
+# Copy LTS-specific overrides and build scripts
+COPY system_files_overrides /overrides
+COPY build_scripts /build_scripts
+
+# FINAL BUILD STAGE
+ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
+FROM quay.io/centos-bootc/centos-bootc:$MAJOR_VERSION
+
+ARG ENABLE_GDX="${ENABLE_GDX:-0}"
+ARG ENABLE_HWE="${ENABLE_HWE:-0}"
+ARG IMAGE_NAME="${IMAGE_NAME:-aurora}"
+ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
+ARG MAJOR_VERSION="${MAJOR_VERSION:-lts}"
+ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT:-deadbeef}"
+
+# TEST: Show what we have before running build scripts
+RUN --mount=type=tmpfs,dst=/opt \
+  --mount=type=tmpfs,dst=/tmp \
+  --mount=type=tmpfs,dst=/var \
+  --mount=type=tmpfs,dst=/boot \
+  --mount=type=bind,from=akmods_zfs,src=/rpms,dst=/tmp/akmods-zfs-rpms \
+  --mount=type=bind,from=akmods_zfs,src=/kernel-rpms,dst=/tmp/kernel-rpms \
+  --mount=type=bind,from=akmods_nvidia_open,src=/rpms,dst=/tmp/akmods-nvidia-open-rpms \
+  --mount=type=bind,from=context,source=/,target=/run/context \
+  echo "=== FINAL CONTEXT STRUCTURE ===" && \
+  echo "--- /run/context contents ---" && \
+  ls -la /run/context/ && \
+  echo "" && \
+  echo "--- Files in /run/context/files ---" && \
+  echo "Total: $(find /run/context/files -type f 2>/dev/null | wc -l) files" && \
+  find /run/context/files -type f 2>/dev/null | head -20 && \
+  echo "" && \
+  echo "--- Brew directory ---" && \
+  ls -la /run/context/brew/ 2>/dev/null || echo "No brew directory" && \
+  echo "" && \
+  echo "--- Just directory ---" && \
+  ls -la /run/context/just/ 2>/dev/null || echo "No just directory" && \
+  echo "" && \
+  echo "--- Flatpaks directory ---" && \
+  ls -la /run/context/flatpaks/ 2>/dev/null || echo "No flatpaks directory" && \
+  echo "" && \
+  echo "--- Logos directory ---" && \
+  ls -la /run/context/logos/ 2>/dev/null || echo "No logos directory" && \
+  echo "" && \
+  echo "=== END TEST ==="
+
+# Makes `/opt` writeable by default
+RUN rm -rf /opt && ln -s /var/opt /opt 
