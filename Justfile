@@ -105,7 +105,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     fi
 
     echo "Building image ${target_image}:${tag} with args: ${BUILD_ARGS[*]}"
-
+    
     function sudoif(){
         if [[ "${UID}" -eq 0 ]]; then
             "$@"
@@ -117,7 +117,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
             exit 1
         fi
     }
-
+    
     sudoif podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
@@ -133,11 +133,10 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
 #
 # Example usage:
 #   just rechunk bluefin lts
-
-# just rechunk bluefin lts lts-optimized
+#   just rechunk bluefin lts lts-optimized
 rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -euxo pipefail
 
     local_src="localhost/{{ src_image }}:{{ src_tag }}"
     remote_src="{{ src_image }}:{{ src_tag }}"
@@ -157,40 +156,42 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
         fi
     }
 
-    # 1. Check root's storage for the image.
+    echo "Checking for source image..."
+    # Check root's storage for the image
     if sudoif podman image exists "${local_src}"; then
         src="${local_src}"
+        echo "Found source image: ${src}"
     elif sudoif podman image exists "${remote_src}"; then
         src="${remote_src}"
+        echo "Found source image: ${src}"
     else
         echo "Error: Image not found in root storage: {{ src_image }}:{{ src_tag }} (or localhost prefixed)." >&2
+        echo "Available images:"
+        sudoif podman images
         exit 1
     fi
 
-    echo "Rechunking ${src} -> ${dst}"
+    echo "Starting rechunk: ${src} -> ${dst}"
+    echo "This may take several minutes..."
 
-    args_podman=(
-        --rm
-        --privileged
-        --pull=never
-        --security-opt=label=disable
-        -v /var/lib/containers:/var/lib/containers
-        --entrypoint=/usr/libexec/bootc-base-imagectl
-    )
+    # Run rechunk with explicit logging
+    sudoif podman run \
+        --rm \
+        --privileged \
+        --pull=never \
+        --security-opt=label=disable \
+        -v /var/lib/containers:/var/lib/containers \
+        --entrypoint=/usr/libexec/bootc-base-imagectl \
+        "${src}" \
+        rechunk "${src}" "${dst}"
 
-    args_imagectl=(rechunk)
-    args_imagectl+=("${src}" "${dst}")
-
-    # Use the source image as the rechunk image
-    args_podman+=("${src}")
-
-    sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
+    echo "Rechunk process completed, verifying output..."
 
     # Verify the rechunked image was created
     if sudoif podman image exists "${dst}"; then
-        echo "Rechunked image successfully created: ${dst}"
+        echo "✓ Rechunked image successfully created: ${dst}"
     else
-        echo "Warning: Rechunked image not found at expected location: ${dst}"
+        echo "✗ Warning: Rechunked image not found at expected location: ${dst}"
         echo "Available images:"
         sudoif podman images
         exit 1
@@ -206,8 +207,7 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
 #
 # Example usage:
 #   just build-rechunk
-
-# just build-rechunk bluefin lts 0 0
+#   just build-rechunk bluefin lts 0 0
 build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (build target_image tag gdx hwe) && (rechunk target_image tag)
 
 # Build a bootc bootable image using Bootc Image Builder (BIB)
@@ -218,7 +218,6 @@ build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (buil
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (default: image.toml)
 #
-
 # Example: just _build-bib localhost/fedora latest qcow2 image.toml
 _build-bib $target_image $tag $type $config:
     #!/usr/bin/env bash
@@ -275,7 +274,6 @@ _build-bib $target_image $tag $type $config:
 #   type: The type of image to build (ex. qcow2, raw, iso)
 #   config: The configuration file to use for the build (deafult: image.toml)
 #
-
 # Example: just _rebuild-bib localhost/fedora latest qcow2 image.toml
 _rebuild-bib $target_image $tag $type $config: (build target_image tag) && (_build-bib target_image tag type config)
 
@@ -417,7 +415,7 @@ patch-iso-branding override="0" iso_path="output/bootiso/install.iso":
             exit 1
         fi
     }
-
+    
     sudoif podman run \
         --rm \
         -it \
