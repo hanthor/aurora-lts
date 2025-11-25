@@ -136,7 +136,8 @@ jobs:
           ENABLE_HWE=$([[ "${HWE}" == "true" ]] && echo "1" || echo "0")
           ENABLE_GDX=$([[ "${FLAVOR}" =~ "gdx" ]] && echo "1" || echo "0")
           
-          sudo just build "${IMAGE_NAME}" "${DEFAULT_TAG}" "${ENABLE_GDX}" "${ENABLE_HWE}"
+          just_path=$(which just)
+          sudo "$just_path" build "${IMAGE_NAME}" "${DEFAULT_TAG}" "${ENABLE_GDX}" "${ENABLE_HWE}"
           echo "image_tag=${DEFAULT_TAG}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Syft
@@ -160,7 +161,8 @@ jobs:
         if: ${{ inputs.rechunk && inputs.publish }}
         id: rechunk
         run: |
-          sudo just rechunk "${IMAGE_NAME}" "${DEFAULT_TAG}" "${DEFAULT_TAG}-rechunked"
+          just_path=$(which just)
+          sudo "$just_path" rechunk "${IMAGE_NAME}" "${DEFAULT_TAG}" "${DEFAULT_TAG}-rechunked"
           echo "tag=localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked" >> $GITHUB_OUTPUT
 
       - name: Tag Image for Registry
