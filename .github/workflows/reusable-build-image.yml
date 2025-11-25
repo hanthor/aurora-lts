@@ -182,7 +182,7 @@ jobs:
           DRACUT_NO_ROOT: 1
           SYSTEMD_IN_CONTAINER: 1
         with:
-          push: ${{ inputs.publish }}
+          push: ${{ inputs.publish && 'true' || 'false' }}
           tag: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}
           build-args: ${{ steps.build-args.outputs.build_args }}
           file: Containerfile
@@ -193,8 +193,8 @@ jobs:
         id: push
         run: |
           IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}"
-          # Get digest from the local image that was just pushed
-          DIGEST=$(podman inspect --format '{{.Digest}}' "${IMAGE}")
+          # Get digest from the remote image that was just pushed
+          DIGEST=$(skopeo inspect --format '{{.Digest}}' "docker://${IMAGE}")
           echo "remote_image_digest=${DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Setup Syft
