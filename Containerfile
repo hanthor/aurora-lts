@@ -12,31 +12,34 @@ FROM alpine:latest AS merger
 # Copy each source to separate directories
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /system_files /aurora-files
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /brew /brew
+COPY --from=ghcr.io/hanthor/aurora-oci:latest /just /just
+
+
 COPY system_files /lts-files
+COPY system_files_overrides /overrides
+COPY build_scripts /build_scripts
 
 # Merge in priority order: common -> aurora -> lts (lts has highest priority)
 RUN echo "=== MERGING FILES ===" && \
     mkdir -p /merged-files && \
     cp -av /common-files/. /merged-files/ && \
     cp -av /aurora-files/. /merged-files/ && \
-    cp -av /lts-files/. /merged-files/
+    cp -av /lts-files/. /merged-files/ && \
+    mkdir -p /merged-files/usr/share/ublue-os/just && \
+    find /just -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >>/merged-files/usr/share/ublue-os/just/60-custom.just && \
+    mkdir -p /merged-files/usr/share/ublue-os/homebrew && \
+    cp /brew/*.Brewfile /merged-files/usr/share/ublue-os/homebrew/ && \
 
-# CONTEXT STAGE: Prepare final context with merged files
 FROM scratch AS context
 
-# Copy merged system files
 COPY --from=merger /merged-files /files
-
-# Copy other resources from aurora-oci (no conflicts)
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /brew /brew
+COPY --from=overrides /overrides /overrides
+COPY --from=build_scripts /build_scripts /build_scripts
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /flatpaks /flatpaks
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /just /just
 COPY --from=ghcr.io/hanthor/aurora-oci:latest /logos /logos
 
-# Copy LTS-specific overrides and build scripts
-COPY system_files_overrides /overrides
-COPY build_scripts /build_scripts
-COPY build_scripts /build_scripts
+
 
 ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
 FROM quay.io/centos-bootc/centos-bootc:$MAJOR_VERSION
