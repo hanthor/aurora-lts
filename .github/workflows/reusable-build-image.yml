@@ -178,6 +178,9 @@ jobs:
       - name: Build, rechunk, and push the image
         uses: jharmison-redhat/action-bootc-build@v1
         id: build-image
+        env:
+          DRACUT_NO_ROOT: 1
+          SYSTEMD_IN_CONTAINER: 1
         with:
           push: ${{ inputs.publish }}
           tag: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}
@@ -190,7 +193,8 @@ jobs:
         id: push
         run: |
           IMAGE="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.build-args.outputs.default_tag }}-${{ matrix.platform }}"
-          DIGEST=$(podman inspect --format '{{.Digest}}' "docker://${IMAGE}")
+          # Get digest from the local image that was just pushed
+          DIGEST=$(podman inspect --format '{{.Digest}}' "${IMAGE}")
           echo "remote_image_digest=${DIGEST}" >> $GITHUB_OUTPUT
 
       - name: Setup Syft
