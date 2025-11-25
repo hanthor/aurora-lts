@@ -129,15 +129,15 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
 #
 # Example usage:
 #   just rechunk bluefin lts
-
-# just rechunk bluefin lts lts-optimized
+#   just rechunk bluefin lts lts-optimized
 rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
     #!/usr/bin/env bash
     set -euo pipefail
 
     local_src="localhost/{{ src_image }}:{{ src_tag }}"
     remote_src="{{ src_image }}:{{ src_tag }}"
-    dst="{{ src_image }}:{{ dst_tag }}"
+    # Always use localhost/ prefix for destination to match workflow expectations
+    dst="localhost/{{ src_image }}:{{ dst_tag }}"
     src=""
 
     # 1. Check root's storage for the image.
@@ -169,7 +169,15 @@ rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rec
 
     {{ just }} sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
 
-    echo "Rechunked image available as: ${dst}"
+    # Verify the rechunked image was created
+    if {{ just }} sudoif podman image exists "${dst}"; then
+        echo "Rechunked image successfully created: ${dst}"
+    else
+        echo "Warning: Rechunked image not found at expected location: ${dst}"
+        echo "Available images:"
+        {{ just }} sudoif podman images
+        exit 1
+    fi
 
 # Build and rechunk an image in one command
 # This is the default recipe - it builds the image and then rechunks it for optimal performance
