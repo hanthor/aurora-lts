@@ -179,30 +179,14 @@ jobs:
         id: rechunk
         shell: bash
         run: |
-          # Use bootc-base-imagectl to rechunk the build
-          set -e
-
-          src="localhost/${IMAGE_NAME}:${DEFAULT_TAG}"
-          dst="localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked"
-
-          args_podman=(
-            --rm
-            --privileged
-            --pull=never
-            --security-opt=label=disable
-            -v /var/lib/containers:/var/lib/containers
-            --entrypoint=/usr/libexec/bootc-base-imagectl
-          )
-
-          args_imagectl=(rechunk)
-          args_imagectl+=("$src" "$dst")
-
-          # Use the source image as the rechunk image
-          args_podman+=("$src")
-
-          sudo podman run "${args_podman[@]}" "${args_imagectl[@]}"
-
+          set -x
+          just=$(which just)
+          
+          # Rechunk the image using the just recipe
+          sudo $just rechunk "${IMAGE_NAME}" "${DEFAULT_TAG}" "${DEFAULT_TAG}-rechunked"
+          
           # Set outputs for the Load Image step
+          dst="localhost/${IMAGE_NAME}:${DEFAULT_TAG}-rechunked"
           echo "tag=$dst" >> $GITHUB_OUTPUT
           echo "ref=$dst" >> $GITHUB_OUTPUT
 

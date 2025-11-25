@@ -9,9 +9,7 @@ alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
 alias run-vm := run-vm-qcow2
 
-[private]
-default:
-    @just --list
+default: build-rechunk
 
 # Check Just Syntax
 [group('Just')]
@@ -120,6 +118,59 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
         --pull=newer \
         --tag "${target_image}:${tag}" \
         .
+
+# Rechunk an image using bootc-base-imagectl
+# This optimizes the image layers for better performance and smaller diffs
+# Parameters:
+#   src_image: The source image to rechunk (default: image_name)
+#   src_tag: The tag of the source image (default: default_tag)
+#   dst_tag: The tag for the rechunked image (default: src_tag-rechunked)
+#
+# Example usage:
+#   just rechunk bluefin lts
+
+# just rechunk bluefin lts lts-optimized
+rechunk $src_image=image_name $src_tag=default_tag $dst_tag=(default_tag + "-rechunked"):
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    src="${src_image}:${src_tag}"
+    dst="${src_image}:${dst_tag}"
+
+    echo "Rechunking ${src} -> ${dst}"
+
+    args_podman=(
+        --rm
+        --privileged
+        --pull=never
+        --security-opt=label=disable
+        -v /var/lib/containers:/var/lib/containers
+        --entrypoint=/usr/libexec/bootc-base-imagectl
+    )
+
+    args_imagectl=(rechunk)
+    args_imagectl+=("${src}" "${dst}")
+
+    # Use the source image as the rechunk image
+    args_podman+=("${src}")
+
+    just sudoif podman run "${args_podman[@]}" "${args_imagectl[@]}"
+
+    echo "Rechunked image available as: ${dst}"
+
+# Build and rechunk an image in one command
+# This is the default recipe - it builds the image and then rechunks it for optimal performance
+# Parameters:
+#   target_image: The name of the image to build (default: image_name)
+#   tag: The tag for the image (default: default_tag)
+#   gdx: Enable GDX (default: "0")
+#   hwe: Enable HWE (default: "0")
+#
+# Example usage:
+#   just build-rechunk
+
+# just build-rechunk bluefin lts 0 0
+build-rechunk $target_image=image_name $tag=default_tag $gdx="0" $hwe="0": (build target_image tag gdx hwe) && (rechunk target_image tag)
 
 # Command: _rootful_load_image
 # Description: This script checks if the current user is root or running under sudo. If not, it attempts to resolve the image tag using podman inspect.
