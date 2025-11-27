@@ -32,10 +32,10 @@ dnf -y install \
 	adcli \
 	borgbackup \
 	davfs2 \
-	fish \
 	freeipa-client \
 	git-credential-libsecret \
 	ifuse \
+	ImageMagick \
 	krb5-workstation \
 	ksystemlog \
 	libimobiledevice \
@@ -77,7 +77,6 @@ dnf -y --enablerepo copr:copr.fedorainfracloud.org:ublue-os:packages install \
 	ublue-os-update-services \
 	ublue-{motd,fastfetch,bling,rebase-helper,setup-services,polkit-rules,brew} \
 	uupd \
-	aurora-backgrounds \
 	kcm_ublue \
 	krunner-bazaar
 
