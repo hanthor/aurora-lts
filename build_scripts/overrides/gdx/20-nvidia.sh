@@ -35,7 +35,8 @@ dnf install -y --enablerepo="cuda-rhel10-${NVIDIA_ARCH}" \
     nvidia-driver \
     nvidia-driver-cuda \
     nvidia-settings \
-    nvidia-container-toolkit
+    nvidia-container-toolkit \
+    cuda
 
 # Ensure the version of the Nvidia module matches the driver
 KMOD_VERSION="$(rpm -q --queryformat '%{VERSION}' kmod-nvidia)"
