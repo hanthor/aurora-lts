@@ -13,7 +13,7 @@ COPY --from=ghcr.io/get-aurora-dev/common:latest /brew /brew
 COPY --from=ghcr.io/get-aurora-dev/common:latest /just /just
 COPY --from=ghcr.io/get-aurora-dev/common:latest /flatpaks /flatpaks
 COPY --from=ghcr.io/get-aurora-dev/common:latest /logos /logos
-COPY --from=ghcr.io/hanthor/artwork/aurora-wallpapers:latest /usr/share/backgrounds/aurora-wallpapers/kde /wallpapers
+COPY --from=ghcr.io/hanthor/artwork/aurora-wallpapers:latest / /wallpapers
 COPY system_files /lts-files
 COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
