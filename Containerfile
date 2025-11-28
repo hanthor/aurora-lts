@@ -6,7 +6,7 @@ FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
 FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 
 # Merge system files 
-FROM alpine:latest AS context
+FROM cgr.dev/chainguard/wolfi-base:latest AS context
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
 COPY --from=ghcr.io/get-aurora-dev/common:latest /system_files/shared /aurora-files
 COPY --from=ghcr.io/get-aurora-dev/common:latest /brew /brew
