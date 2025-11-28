@@ -8,11 +8,11 @@ FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 # Merge system files 
 FROM alpine:latest AS context
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /system_files/shared /aurora-files
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /brew /brew
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /just /just
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /flatpaks /flatpaks
-COPY --from=ghcr.io/hanthor/aurora-oci:latest /logos /logos
+COPY --from=ghcr.io/get-aurora-dev/common:latest /system_files/shared /aurora-files
+COPY --from=ghcr.io/get-aurora-dev/common:latest /brew /brew
+COPY --from=ghcr.io/get-aurora-dev/common:latest /just /just
+COPY --from=ghcr.io/get-aurora-dev/common:latest /flatpaks /flatpaks
+COPY --from=ghcr.io/get-aurora-dev/common:latest /logos /logos
 COPY system_files /lts-files
 COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
