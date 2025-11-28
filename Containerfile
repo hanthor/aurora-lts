@@ -5,6 +5,9 @@ ARG AKMODS_VERSION="${AKMODS_VERSION:-centos-10}"
 FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
 FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 
+# Import wallpapers
+FROM ghcr.io/hanthor/artwork/aurora-wallpapers:latest AS wallpapers
+
 # Merge system files 
 FROM cgr.dev/chainguard/wolfi-base:latest AS context
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files /common-files
@@ -13,16 +16,18 @@ COPY --from=ghcr.io/get-aurora-dev/common:latest /brew /brew
 COPY --from=ghcr.io/get-aurora-dev/common:latest /just /just
 COPY --from=ghcr.io/get-aurora-dev/common:latest /flatpaks /flatpaks
 COPY --from=ghcr.io/get-aurora-dev/common:latest /logos /logos
+COPY --from=wallpapers /usr/share/backgrounds/aurora-wallpapers /wallpapers
 COPY system_files /lts-files
 COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
 
 # Merge
 RUN apk add --no-cache rsync && \
-    mkdir -p /files/usr/share/ublue-os/just /files/usr/share/ublue-os/homebrew && \
+    mkdir -p /files/usr/share/ublue-os/just /files/usr/share/ublue-os/homebrew /files/usr/share/backgrounds && \
     rsync -av /common-files/ /files/ && \
     rsync -av /aurora-files/ /files/ && \
     rsync -av /lts-files/ /files/ && \
+    rsync -av /wallpapers/ /files/usr/share/backgrounds/aurora/ && \
     find /just -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >> /files/usr/share/ublue-os/just/60-custom.just && \
     cp /brew/*.Brewfile /files/usr/share/ublue-os/homebrew/ && \
     tree /files && \

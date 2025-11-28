@@ -21,6 +21,23 @@
       "automerge": true,
       "matchUpdateTypes": ["digest"],
       "matchDepNames": ["quay.io/centos-bootc/centos-bootc"],
+    },
+    {
+      "automerge": true,
+      "matchUpdateTypes": ["digest"],
+      "matchDepNames": [
+        "ghcr.io/ublue-os/akmods-zfs",
+        "ghcr.io/ublue-os/akmods-nvidia-open"
+      ],
+    },
+    {
+      "automerge": true,
+      "matchUpdateTypes": ["digest"],
+      "matchDepNames": [
+        "ghcr.io/hanthor/artwork/aurora-wallpapers",
+        "ghcr.io/projectbluefin/common",
+        "ghcr.io/get-aurora-dev/common"
+      ],
     }
   ]
 }
