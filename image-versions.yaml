@@ -2,7 +2,7 @@ images:
   - name: centos-bootc
     image: quay.io/centos-bootc/centos-bootc
     tag: c10s
-    digest: sha256:01f66a0009ee2a24fb907bfaee335539d680cfd2cf323f8f37b64e324ed8d412
+    digest: sha256:b684c30040013cb693fd67f37b3439ca3653700231df7311aa47ca3a13f68135
   - name: akmods-zfs
     image: ghcr.io/ublue-os/akmods-zfs
     tag: centos-10
