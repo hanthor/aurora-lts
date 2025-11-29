@@ -1,54 +1,73 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
   ],
-
-  "customManagers": [
+  customManagers: [
     {
-      "customType": "regex",
-      "fileMatch": ["^image-versions\\.yaml$"],
-      "matchStrings": [
-        "image: (?<depName>.*?)\\n\\s+tag: (?<currentValue>.*?)(?:\\n\\s+digest: (?<currentDigest>.*?))?\\n"
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^image-versions\\.yaml$/',
       ],
-      "datasourceTemplate": "docker"
-    }
+      matchStrings: [
+        'image: (?<depName>.*?)\\n\\s+tag: (?<currentValue>.*?)(?:\\n\\s+digest: (?<currentDigest>.*?))?\\n',
+      ],
+      datasourceTemplate: 'docker',
+    },
   ],
-
-  "rebaseWhen": "never",
-
-  "packageRules": [
+  rebaseWhen: 'never',
+  packageRules: [
     {
-      "automerge": true,
-      "matchUpdateTypes": ["pin", "pinDigest"]
-    },
-    {
-      "enabled": false,
-      "matchUpdateTypes": ["digest", "pin", "pinDigest"],
-      "matchDepTypes": ["container"],
-      "matchFileNames": [".github/workflows/**.yaml", ".github/workflows/**.yml"],
-    },
-    {
-      "automerge": true,
-      "matchUpdateTypes": ["digest"],
-      "matchDepNames": ["quay.io/centos-bootc/centos-bootc"],
-    },
-    {
-      "automerge": true,
-      "matchUpdateTypes": ["digest"],
-      "matchDepNames": [
-        "ghcr.io/ublue-os/akmods-zfs",
-        "ghcr.io/ublue-os/akmods-nvidia-open"
+      automerge: true,
+      matchUpdateTypes: [
+        'pin',
+        'pinDigest',
       ],
     },
     {
-      "automerge": true,
-      "matchUpdateTypes": ["digest"],
-      "matchDepNames": [
-        "ghcr.io/hanthor/artwork/aurora-wallpapers",
-        "ghcr.io/projectbluefin/common",
-        "ghcr.io/get-aurora-dev/common"
+      enabled: false,
+      matchUpdateTypes: [
+        'digest',
+        'pin',
+        'pinDigest',
       ],
-    }
-  ]
+      matchDepTypes: [
+        'container',
+      ],
+      matchFileNames: [
+        '.github/workflows/**.yaml',
+        '.github/workflows/**.yml',
+      ],
+    },
+    {
+      automerge: true,
+      matchUpdateTypes: [
+        'digest',
+      ],
+      matchDepNames: [
+        'quay.io/centos-bootc/centos-bootc',
+      ],
+    },
+    {
+      automerge: true,
+      matchUpdateTypes: [
+        'digest',
+      ],
+      matchDepNames: [
+        'ghcr.io/ublue-os/akmods-zfs',
+        'ghcr.io/ublue-os/akmods-nvidia-open',
+      ],
+    },
+    {
+      automerge: true,
+      matchUpdateTypes: [
+        'digest',
+      ],
+      matchDepNames: [
+        'ghcr.io/hanthor/artwork/aurora-wallpapers',
+        'ghcr.io/projectbluefin/common',
+        'ghcr.io/get-aurora-dev/common',
+      ],
+    },
+  ],
 }
