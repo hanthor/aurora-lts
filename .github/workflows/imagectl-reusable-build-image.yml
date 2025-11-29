@@ -176,7 +176,7 @@ jobs:
           echo "default_tag=${DEFAULT_TAG}" >> $GITHUB_OUTPUT
 
       - name: Build, rechunk, and push the image
-        uses: jharmison-redhat/action-bootc-build@v1
+        uses: jharmison-redhat/action-bootc-build@d3c254510a6e962044ffb9e2eaa440fccb307a03 # v1
         id: build-image
         env:
           DRACUT_NO_ROOT: 1
