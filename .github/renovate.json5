@@ -4,6 +4,17 @@
     "config:best-practices",
   ],
 
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^image-versions\\.yaml$"],
+      "matchStrings": [
+        "image: (?<depName>.*?)\\n\\s+tag: (?<currentValue>.*?)(?:\\n\\s+digest: (?<currentDigest>.*?))?\\n"
+      ],
+      "datasourceTemplate": "docker"
+    }
+  ],
+
   "rebaseWhen": "never",
 
   "packageRules": [

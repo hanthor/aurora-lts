@@ -11,6 +11,16 @@ ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7/contents/images/3840x216
 ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7/contents/images/3840x2160.jxl /usr/share/backgrounds/default-dark.jxl
 ln -sf /usr/share/backgrounds/aurora/aurora.xml /usr/share/backgrounds/default.xml
 
+# Ensure the wallpaper is available where KDE expects it
+mkdir -p /usr/share/wallpapers
+ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7 /usr/share/wallpapers/aurora-wallpaper-7
+
+# Remove Fedora branding to avoid confusion
+rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
+rm -rf /usr/share/wallpapers/fedora
+rm -rf /usr/share/wallpapers/Fedora
+rm -rf /usr/share/wallpapers/F4*
+
 # sets default/pinned applications on the taskmanager applet on the panel, there is no nice way to do this
 # https://bugs.kde.org/show_bug.cgi?id=511560
 sed -i '/<entry name="launchers" type="StringList">/,/<\/entry>/ s/<default>[^<]*<\/default>/<default>preferred:\/\/browser,applications:org.gnome.Ptyxis.desktop,applications:io.github.kolunmi.Bazaar.desktop,preferred:\/\/filemanager<\/default>/' /usr/share/plasma/plasmoids/org.kde.plasma.taskmanager/contents/config/main.xml
@@ -55,6 +65,18 @@ mkdir -p /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/contents/s
 gzip -c /usr/share/icons/hicolor/scalable/distributor-logo.svg > /usr/share/plasma/look-and-feel/dev.getaurora.aurora.desktop/contents/splash/images/aurora_logo.svgz
 
 ln -sr /usr/share/icons/hicolor/scalable/places/distributor-logo.svg /usr/share/sddm/themes/01-breeze-aurora/default-logo.svg
+
+# Set default wallpaper for Breeze themes
+declare -a lookandfeels=("org.kde.breeze.desktop" "org.kde.breezedark.desktop" "org.kde.breezetwilight.desktop")
+for lookandfeel in "${lookandfeels[@]}"
+do
+    if [ -f "/usr/share/plasma/look-and-feel/${lookandfeel}/contents/defaults" ]; then
+        sed -i \
+            's,Image=.*,Image=aurora-wallpaper-7,g' \
+            "/usr/share/plasma/look-and-feel/${lookandfeel}/contents/defaults"
+    fi
+done
+
 
 # generate plymouth logos
 mkdir -p /usr/share/plymouth/themes/spinner/
