@@ -8,11 +8,11 @@ FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 # Merge system files 
 FROM cgr.dev/chainguard/wolfi-base:latest@sha256:42012fa027adc864efbb7cf68d9fc575ea45fe1b9fb0d16602e00438ce3901b1 AS context
 COPY --from=ghcr.io/projectbluefin/common:latest@sha256:e10f4af0f9d508d4661f4426c1c835ce02a770787e8d1561758ee953dfde06a7 /system_files /common-files
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:ad0b6c8fd986bcf5e63162cd79397168170f197065b39278370f23dddc67a65a /system_files/shared /aurora-files
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:ad0b6c8fd986bcf5e63162cd79397168170f197065b39278370f23dddc67a65a /brew /brew
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:ad0b6c8fd986bcf5e63162cd79397168170f197065b39278370f23dddc67a65a /just /just
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:ad0b6c8fd986bcf5e63162cd79397168170f197065b39278370f23dddc67a65a /flatpaks /flatpaks
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:ad0b6c8fd986bcf5e63162cd79397168170f197065b39278370f23dddc67a65a /logos /logos
+COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /system_files/shared /aurora-files
+COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /brew /brew
+COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /just /just
+COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /flatpaks /flatpaks
+COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /logos /logos
 COPY --from=ghcr.io/hanthor/artwork/aurora-wallpapers:latest@sha256:da619db0ca0b4c151f58a83aeb50610b76199b94dd1d7b5832d0f2181c7e3359 / /wallpapers
 COPY system_files /lts-files
 COPY system_files_overrides /overrides
