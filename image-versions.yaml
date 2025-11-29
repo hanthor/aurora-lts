@@ -20,7 +20,7 @@ images:
   - name: aurora-wallpapers
     image: ghcr.io/hanthor/artwork/aurora-wallpapers
     tag: latest
-    digest: sha256:ad4053afe888fedd7a85dfeed898b48fcae7c9df25d19ce8fe9db8f75fc5ed3d
+    digest: sha256:da619db0ca0b4c151f58a83aeb50610b76199b94dd1d7b5832d0f2181c7e3359
   - name: bluefin-common
     image: ghcr.io/projectbluefin/common
     tag: latest
