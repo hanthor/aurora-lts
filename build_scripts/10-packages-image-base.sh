@@ -14,9 +14,9 @@ dnf -y install 'dnf-command(versionlock)'
 
 
 
-# GNOME 48 backport COPR (Removed for KDE)
-# dnf copr enable -y "jreilly1821/c10s-gnome"
-# ...
+# GNOME 48 backport COPR (Needed for the gtk4 4.18 fix)
+dnf copr enable -y "jreilly1821/c10s-gnome"
+
 
 # This fixes a lot of skew issues on GDX because kernel-devel wont update then
 dnf versionlock add kernel kernel-devel kernel-devel-matched kernel-core kernel-modules kernel-modules-core kernel-modules-extra kernel-uki-virt
