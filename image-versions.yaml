@@ -10,7 +10,7 @@ images:
   - name: akmods-nvidia-open
     image: ghcr.io/ublue-os/akmods-nvidia-open
     tag: centos-10
-    digest: sha256:3a5da3db310053c1f9792d453a907f0efe9702a71d15d49ef193876109ef19c0
+    digest: sha256:ebcc17e669f964b5ad90d73be5f74861defb7e53c16390098eb6fa045ea94f55
   - name: akmods-zfs
     image: ghcr.io/ublue-os/akmods-zfs
     tag: coreos-stable-42
