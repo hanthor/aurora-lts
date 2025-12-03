@@ -24,7 +24,7 @@ images:
   - name: bluefin-common
     image: ghcr.io/projectbluefin/common
     tag: latest
-    digest: sha256:f53cbe200d17c3e6f878b8195f3e1001152cdf9b4cc23d6fd779bb9cbc0c7f9f
+    digest: sha256:010a877426875af903b5135d53605337c0bac6c893e2ad3e203473824ae3675c
   - name: aurora-common
     image: ghcr.io/get-aurora-dev/common
     tag: latest
