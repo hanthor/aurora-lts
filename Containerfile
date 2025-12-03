@@ -7,7 +7,7 @@ FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
 
 # Merge system files 
 FROM cgr.dev/chainguard/wolfi-base:latest@sha256:42012fa027adc864efbb7cf68d9fc575ea45fe1b9fb0d16602e00438ce3901b1 AS context
-COPY --from=ghcr.io/projectbluefin/common:latest@sha256:786eddf7b5219ef4ddc67672bc2f362d9015b35b2fdfcecd4edd78b8228c848c /system_files /common-files
+COPY --from=ghcr.io/projectbluefin/common:latest@sha256:f53cbe200d17c3e6f878b8195f3e1001152cdf9b4cc23d6fd779bb9cbc0c7f9f /system_files /common-files
 COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /system_files/shared /aurora-files
 COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /brew /brew
 COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /just /just
