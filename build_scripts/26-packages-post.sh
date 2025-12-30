@@ -20,6 +20,16 @@ install -Dm0644 -t /etc/ublue-os/ /run/context/flatpaks/*.list
 
 /usr/sbin/depmod -a `ls -1 /lib/modules/ | tail -1`
 
+# Fix for Ptyxis Ctrl+Arrow keys not working in Zsh
+# https://gitlab.gnome.org/GNOME/ptyxis/-/issues/16
+cat >> /etc/zshrc <<EOF
+
+# Fix for Ptyxis Ctrl+Left/Right
+bindkey "\e[1;5C" forward-word
+bindkey "\e[1;5D" backward-word
+bindkey "\e[5C" forward-word
+bindkey "\e[5D" backward-word
+EOF
 
 # Git clone aurora and get the Bazaar config and copy it over
 # mkdir -p "/usr/share/ublue-os"
