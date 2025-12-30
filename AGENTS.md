@@ -9,7 +9,7 @@ Always reference these instructions first and fallback to search or bash command
 ### Prerequisites and Setup
 - **CRITICAL**: Install just command runner first:
   ```bash
-  wget -qO- "https://github.com/casey/just/releases/download/1.34.0/just-1.34.0-x86_64-unknown-linux-musl.tar.gz" | tar --no-same-owner -C /usr/local/bin -xz just
+brew install just
   ```
 - Ensure podman is available: `which podman` (should be present)
 - Verify git is available: `which git`
@@ -46,9 +46,9 @@ Always reference these instructions first and fallback to search or bash command
 ## Build System Architecture
 
 ### Key Build Variants
-- **Regular**: Basic Aurora LTS (`just build aurora lts 0 0 0`)
-- **GDX**: GPU Developer Experience with CUDA, AI tools (`just build aurora lts 0 1 0`)  
-- **HWE**: Hardware Enablement for newer hardware (`just build aurora lts 0 0 1`)
+- **Regular**: Basic Aurora LTS (`just build aurora lts 0 0`)
+- **GDX**: GPU Developer Experience with CUDA, AI tools (`just build aurora lts 1 0`)  
+- **HWE**: Hardware Enablement for newer hardware (`just build aurora lts 0 1`)
 
 ### Core Build Process
 1. **Container Build**: Uses Containerfile with CentOS Stream 10 base

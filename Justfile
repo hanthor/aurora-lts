@@ -80,13 +80,24 @@ sudoif command *args:
     }
     sudoif {{ command }} {{ args }}
 
-# Build the image using the specified parameters
-build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
+[private]
+_ensure-yq:
     #!/usr/bin/env bash
-    set -euo pipefail
+    if ! command -v yq &> /dev/null; then
+        echo "Missing requirement: 'yq' is not installed."
+        echo "Please install yq (e.g. 'brew install yq')"
+        exit 1
+    fi
+
+# Build the image using the specified parameters
+build $target_image=image_name $tag=default_tag $dx="0" $gdx="0" $hwe="0": _ensure-yq
+    #!/usr/bin/env bash
 
     # Get Version
     ver="${tag}-${centos_version}.$(date +%Y%m%d)"
+
+    common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yaml)
+    brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yaml)
 
     BUILD_ARGS=()
     BUILD_ARGS+=("--build-arg" "MAJOR_VERSION=${centos_version}")
@@ -94,6 +105,8 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${repo_organization}")
     BUILD_ARGS+=("--build-arg" "ENABLE_GDX=${gdx}")
     BUILD_ARGS+=("--build-arg" "ENABLE_HWE=${hwe}")
+    BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_SHA=${common_image_sha}")
+    BUILD_ARGS+=("--build-arg" "BREW_IMAGE_SHA=${brew_image_sha}")
     # Select akmods source tag for mounted ZFS/NVIDIA images
     if [[ "${hwe}" -eq "1" ]]; then
         BUILD_ARGS+=("--build-arg" "AKMODS_VERSION=coreos-stable-${coreos_stable_version}")
@@ -118,7 +131,7 @@ build $target_image=image_name $tag=default_tag $gdx="0" $hwe="0":
         fi
     }
 
-    sudoif podman build \
+    podman build \
         "${BUILD_ARGS[@]}" \
         --pull=newer \
         --tag "${target_image}:${tag}" \

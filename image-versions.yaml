@@ -17,15 +17,11 @@ images:
   - name: akmods-nvidia-open
     image: ghcr.io/ublue-os/akmods-nvidia-open
     tag: coreos-stable-42
-  - name: aurora-wallpapers
-    image: ghcr.io/hanthor/artwork/aurora-wallpapers
-    tag: latest
-    digest: sha256:da619db0ca0b4c151f58a83aeb50610b76199b94dd1d7b5832d0f2181c7e3359
-  - name: bluefin-common
-    image: ghcr.io/projectbluefin/common
-    tag: latest
-    digest: sha256:5ad432a4da41a82fe07907b96cd8ad35e1b455b66d56c32002445e513ec8aa07
-  - name: aurora-common
+  - name: common
     image: ghcr.io/get-aurora-dev/common
     tag: latest
-    digest: sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91
+    digest: sha256:cd002be22582e43cb268ce4b8300167b3b4928584057fc31f61faa7d88a3f0d5
+  - name: brew
+    image: ghcr.io/ublue-os/brew
+    tag: latest
+    digest: sha256:216b36dd07c1e617d4a42c3654aab387b10a60679f7ee22ecef30cb202376594

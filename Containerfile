@@ -1,34 +1,27 @@
 ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
 ARG AKMODS_VERSION="${AKMODS_VERSION:-centos-10}"
+ARG COMMON_IMAGE="ghcr.io/get-aurora-dev/common:latest"
+ARG COMMON_IMAGE_SHA=""
+ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
+ARG BREW_IMAGE_SHA=""
 
 # Import akmods sources
 FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
 FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
+FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
+FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
 
-# Merge system files 
-FROM cgr.dev/chainguard/wolfi-base:latest@sha256:42012fa027adc864efbb7cf68d9fc575ea45fe1b9fb0d16602e00438ce3901b1 AS context
-COPY --from=ghcr.io/projectbluefin/common:latest@sha256:5ad432a4da41a82fe07907b96cd8ad35e1b455b66d56c32002445e513ec8aa07 /system_files /common-files
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /system_files/shared /aurora-files
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /brew /brew
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /just /just
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /flatpaks /flatpaks
-COPY --from=ghcr.io/get-aurora-dev/common:latest@sha256:1695a336cf532f6902d0cb5dd8b09c1feb9aa05c1bc4105157e1acfcd7fdfb91 /logos /logos
-COPY --from=ghcr.io/hanthor/artwork/aurora-wallpapers:latest@sha256:da619db0ca0b4c151f58a83aeb50610b76199b94dd1d7b5832d0f2181c7e3359 / /wallpapers
-COPY system_files /lts-files
+FROM scratch AS context
+COPY system_files /files
+COPY --from=common /system_files /files
+COPY --from=common /wallpapers /files/shared
+COPY --from=brew /system_files /files/shared
 COPY system_files_overrides /overrides
 COPY build_scripts /build_scripts
 
-# Merge
-RUN apk add --no-cache rsync && \
-    mkdir -p /files/usr/share/ublue-os/just /files/usr/share/ublue-os/homebrew /files/usr/share/backgrounds && \
-    rsync -av /common-files/ /files/ && \
-    rsync -av /aurora-files/ /files/ && \
-    rsync -av /lts-files/ /files/ && \
-    rsync -av /wallpapers/ /files/usr/share/backgrounds/aurora/ && \
-    find /just -iname '*.just' -exec printf "\n\n" \; -exec cat {} \; >> /files/usr/share/ublue-os/just/60-custom.just && \
-    cp /brew/*.Brewfile /files/usr/share/ublue-os/homebrew/ && \
-    tree /files && \
-    ls -lah /files/usr/lib/systemd/system/
+# https://github.com/get-aurora-dev/common
+COPY --from=common /flatpaks /flatpaks
+COPY --from=common /logos /logos
 
 # Final image
 FROM quay.io/centos-bootc/centos-bootc:$MAJOR_VERSION
@@ -48,4 +41,3 @@ RUN --mount=type=tmpfs,dst=/opt \
     --mount=type=bind,from=akmods_nvidia_open,src=/rpms,dst=/tmp/akmods-nvidia-open-rpms \
     --mount=type=bind,from=context,source=/,target=/run/context \
     /run/context/build_scripts/build.sh
-
