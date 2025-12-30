@@ -1,15 +1,13 @@
 ARG MAJOR_VERSION="${MAJOR_VERSION:-c10s}"
 ARG AKMODS_VERSION="${AKMODS_VERSION:-centos-10}"
-ARG COMMON_IMAGE="ghcr.io/get-aurora-dev/common:latest"
-ARG COMMON_IMAGE_SHA=""
-ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
-ARG BREW_IMAGE_SHA=""
+ARG COMMON_IMAGE_REF
+ARG BREW_IMAGE_REF
 
 # Import akmods sources
 FROM ghcr.io/ublue-os/akmods-zfs:${AKMODS_VERSION} AS akmods_zfs
 FROM ghcr.io/ublue-os/akmods-nvidia-open:${AKMODS_VERSION} AS akmods_nvidia_open
-FROM ${COMMON_IMAGE}@${COMMON_IMAGE_SHA} AS common
-FROM ${BREW_IMAGE}@${BREW_IMAGE_SHA} AS brew
+FROM ${COMMON_IMAGE_REF} AS common
+FROM ${BREW_IMAGE_REF} AS brew
 
 FROM scratch AS context
 COPY system_files /files
@@ -30,6 +28,7 @@ ARG ENABLE_GDX="${ENABLE_GDX:-0}"
 ARG ENABLE_HWE="${ENABLE_HWE:-0}"
 ARG IMAGE_NAME="${IMAGE_NAME:-aurora}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
+ARG MAJOR_VERSION="${MAJOR_VERSION:-lts}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT:-deadbeef}"
 
 RUN --mount=type=tmpfs,dst=/opt \
@@ -41,3 +40,5 @@ RUN --mount=type=tmpfs,dst=/opt \
     --mount=type=bind,from=akmods_nvidia_open,src=/rpms,dst=/tmp/akmods-nvidia-open-rpms \
     --mount=type=bind,from=context,source=/,target=/run/context \
     /run/context/build_scripts/build.sh
+RUN rm -rf /opt && ln -s /var/opt /opt 
+

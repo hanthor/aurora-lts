@@ -4,6 +4,8 @@ export centos_version := env("CENTOS_VERSION", "stream10")
 export default_tag := env("DEFAULT_TAG", "lts")
 export bib_image := env("BIB_IMAGE", "quay.io/centos-bootc/bootc-image-builder:latest")
 export coreos_stable_version := env("COREOS_STABLE_VERSION", "42")
+export common_image := env("COMMON_IMAGE", "ghcr.io/get-aurora-dev/common:latest")
+export brew_image := env("BREW_IMAGE", "ghcr.io/ublue-os/brew:latest")
 
 alias build-vm := build-qcow2
 alias rebuild-vm := rebuild-qcow2
@@ -92,15 +94,19 @@ _ensure-yq:
 # Build the image using the specified parameters
 build $target_image=image_name $tag=default_tag $dx="0" $gdx="0" $hwe="0": _ensure-yq
     #!/usr/bin/env bash
-
     # Get Version
     ver="${tag}-${centos_version}.$(date +%Y%m%d)"
 
     common_image_sha=$(yq -r '.images[] | select(.name == "common") | .digest' image-versions.yaml)
+    common_image_ref="${common_image}@${common_image_sha}"
+
     brew_image_sha=$(yq -r '.images[] | select(.name == "brew") | .digest' image-versions.yaml)
+    brew_image_ref="${brew_image}@${brew_image_sha}"
 
     BUILD_ARGS=()
     BUILD_ARGS+=("--build-arg" "MAJOR_VERSION=${centos_version}")
+    BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_REF=${common_image_ref}")
+    BUILD_ARGS+=("--build-arg" "BREW_IMAGE_REF=${brew_image_ref}")
     BUILD_ARGS+=("--build-arg" "IMAGE_NAME=${image_name}")
     BUILD_ARGS+=("--build-arg" "IMAGE_VENDOR=${repo_organization}")
     BUILD_ARGS+=("--build-arg" "ENABLE_GDX=${gdx}")
