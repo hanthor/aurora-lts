@@ -7,13 +7,13 @@ echo "::group:: ===$(basename "$0")==="
 # Set default wallpaper
 # sddm theme.conf uses .jxl for the background!
 # default-dark currently point to the same file
-ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7/contents/images/3840x2160.jxl /usr/share/backgrounds/default.jxl
-ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7/contents/images/3840x2160.jxl /usr/share/backgrounds/default-dark.jxl
+ln -sf /usr/share/backgrounds/aurora/kde/aurora-wallpaper-7/contents/images/3840x2160.jxl /usr/share/backgrounds/default.jxl
+ln -sf /usr/share/backgrounds/aurora/kde/aurora-wallpaper-7/contents/images/3840x2160.jxl /usr/share/backgrounds/default-dark.jxl
 ln -sf /usr/share/backgrounds/aurora/aurora.xml /usr/share/backgrounds/default.xml
 
 # Ensure the wallpaper is available where KDE expects it
 mkdir -p /usr/share/wallpapers
-ln -sf /usr/share/backgrounds/aurora/aurora-wallpaper-7 /usr/share/wallpapers/aurora-wallpaper-7
+ln -sf /usr/share/backgrounds/aurora/kde/aurora-wallpaper-7 /usr/share/wallpapers/aurora-wallpaper-7
 
 # Remove Fedora branding to avoid confusion
 rm -rf /usr/share/plasma/look-and-feel/org.fedoraproject.fedora.desktop
