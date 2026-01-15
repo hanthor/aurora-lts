@@ -1,9 +1,15 @@
 name: Build Aurora LTS GDX
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 on:
   pull_request:
     branches:
       - main
+      - lts
   schedule:
     - cron: "0 1 * * TUE" # Every Tuesday at 1am UTC
   merge_group:
@@ -21,6 +27,5 @@ jobs:
       image-name: aurora-gdx
       flavor: gdx
       rechunk: ${{ github.event_name != 'pull_request' }}
-      # sbom: ${{ github.event_name != 'pull_request' }}
-      sbom: false
+      sbom: ${{ github.event_name != 'pull_request' }}
       publish: ${{ github.event_name != 'pull_request' }}

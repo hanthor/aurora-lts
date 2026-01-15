@@ -17,41 +17,43 @@ else
     NVIDIA_ARCH="$ARCH"
 fi
 
-dnf config-manager --add-repo="https://developer.download.nvidia.com/compute/cuda/repos/rhel10/${NVIDIA_ARCH}/cuda-rhel10.repo"
-dnf config-manager --set-disabled "cuda-rhel10-${NVIDIA_ARCH}"
+FEDORA_VERSION=43 # FIXME: Figure out a way of fetching this information with coreos akmods as well.
+
+curl -fsSLo - "https://negativo17.org/repos/fedora-nvidia.repo" | sed "s/\$releasever/${FEDORA_VERSION}/g" | tee "/etc/yum.repos.d/fedora-nvidia.repo"
+dnf config-manager --set-disabled "fedora-nvidia"
 
 ### install Nvidia driver packages and dependencies
 # */
-dnf -y install --enablerepo="cuda-rhel10-${NVIDIA_ARCH}"\
+dnf -y install --enablerepo="fedora-nvidia" \
     /tmp/akmods-nvidia-open-rpms/kmods/kmod-nvidia-"${KERNEL_VRA}"-*.rpm \
     /tmp/akmods-nvidia-open-rpms/ublue-os/*.rpm
-
-# enable repos provided by ublue-os-nvidia-addons
 dnf config-manager --set-enabled "nvidia-container-toolkit"
+# Get the kmod-nvidia version to ensure driver packages match
+KMOD_VERSION="$(rpm -q --queryformat '%{VERSION}' kmod-nvidia)"
+# Determine the expected package version format (epoch:version-release)
+NVIDIA_PKG_VERSION="3:${KMOD_VERSION}-1.fc${FEDORA_VERSION}"
 
-dnf install -y --enablerepo="cuda-rhel10-${NVIDIA_ARCH}" \
-    libnvidia-fbc \
-    libnvidia-ml \
-    nvidia-driver \
-    nvidia-driver-cuda \
-    nvidia-settings \
-    nvidia-container-toolkit \
-    cuda
+dnf install -y --enablerepo="fedora-nvidia" \
+    "libnvidia-fbc-${NVIDIA_PKG_VERSION}" \
+    "libnvidia-ml-${NVIDIA_PKG_VERSION}" \
+    "nvidia-driver-${NVIDIA_PKG_VERSION}" \
+    "nvidia-driver-cuda-${NVIDIA_PKG_VERSION}" \
+    "nvidia-settings-${NVIDIA_PKG_VERSION}" \
+    nvidia-container-toolkit
 
 # Ensure the version of the Nvidia module matches the driver
-KMOD_VERSION="$(rpm -q --queryformat '%{VERSION}' kmod-nvidia)"
 DRIVER_VERSION="$(rpm -q --queryformat '%{VERSION}' nvidia-driver)"
 if [ "$KMOD_VERSION" != "$DRIVER_VERSION" ]; then
     echo "Error: kmod-nvidia version ($KMOD_VERSION) does not match nvidia-driver version ($DRIVER_VERSION)"
     exit 1
 fi
 
-cat >/usr/lib/modprobe.d/00-nouveau-blacklist.conf <<EOF
+tee /usr/lib/modprobe.d/00-nouveau-blacklist.conf <<'EOF'
 blacklist nouveau
 options nouveau modeset=0
 EOF
 
-cat >/usr/lib/bootc/kargs.d/00-nvidia.toml <<EOF
+tee /usr/lib/bootc/kargs.d/00-nvidia.toml <<'EOF'
 kargs = ["rd.driver.blacklist=nouveau", "modprobe.blacklist=nouveau", "nvidia-drm.modeset=1"]
 EOF
 

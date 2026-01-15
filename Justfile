@@ -114,7 +114,7 @@ build $target_image=image_name $tag=default_tag $dx="0" $gdx="0" $hwe="0": _ensu
     BUILD_ARGS+=("--build-arg" "COMMON_IMAGE_SHA=${common_image_sha}")
     BUILD_ARGS+=("--build-arg" "BREW_IMAGE_SHA=${brew_image_sha}")
     # Select akmods source tag for mounted ZFS/NVIDIA images
-    if [[ "${hwe}" -eq "1" ]]; then
+    if [[ "${hwe}" -eq "1" || "${gdx}" -eq "1" ]]; then
         BUILD_ARGS+=("--build-arg" "AKMODS_VERSION=coreos-stable-${coreos_stable_version}")
     else
         BUILD_ARGS+=("--build-arg" "AKMODS_VERSION=centos-10")
