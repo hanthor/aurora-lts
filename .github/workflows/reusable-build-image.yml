@@ -61,7 +61,9 @@ env:
   IMAGE_NAME: ${{ inputs.image-name }}
   IMAGE_DESC: ${{ inputs.image-desc }}
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
-  DEFAULT_TAG: "lts"
+  DEFAULT_TAG: "lts" # DO NOT CHANGE! (this will break everything)
+  PRODUCTION_BRANCH: lts # This is the branch that everything gets merged to at the end
+  TESTING_BRANCH: main # This is where the PRs go to :)
   CENTOS_VERSION: ${{ inputs.centos-version }}
   PLATFORMS: ${{ inputs.platforms }}
 
@@ -122,22 +124,36 @@ jobs:
       - name: Check Just Syntax
         run: just check
 
-      - name: Set HWE Tag
-        if: ${{ inputs.hwe }}
-        run: |
-          echo "DEFAULT_TAG=${DEFAULT_TAG}-hwe" >> "${GITHUB_ENV}"
-
       - name: Build Image
         id: build-image
+        shell: bash
         env:
           FLAVOR: ${{ inputs.flavor }}
           HWE: ${{ inputs.hwe }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          ENABLE_HWE=$([[ "${HWE}" == "true" ]] && echo "1" || echo "0")
-          ENABLE_GDX=$([[ "${FLAVOR}" =~ "gdx" ]] && echo "1" || echo "0")
-          
-          just_path=$(which just)
-          sudo "$just_path" build "${IMAGE_NAME}" "${DEFAULT_TAG}" "${ENABLE_GDX}" "${ENABLE_HWE}"
+          set -x
+          just=$(which just)
+
+          ENABLE_HWE=0
+          ENABLE_GDX=0
+          if [[ "${HWE}" == "true" ]] ; then
+            export DEFAULT_TAG="${DEFAULT_TAG}-hwe"
+            ENABLE_HWE=1
+          fi
+
+          if [ "${REF_NAME}" != "${PRODUCTION_BRANCH}" ] && [ "$EVENT_NAME" == "pull_request" ] || [ "${EVENT_NAME}" == "merge_group" ] ; then
+            export TAG_SUFFIX="testing"
+            export DEFAULT_TAG="${DEFAULT_TAG}-${TAG_SUFFIX}"
+          fi
+
+          echo "DEFAULT_TAG=${DEFAULT_TAG}" >> "${GITHUB_ENV}"
+          if [[ "${FLAVOR}" =~ "gdx" ]] ; then
+            ENABLE_GDX=1
+          fi
+
+          sudo $just build "${IMAGE_NAME}" "${DEFAULT_TAG}" "${ENABLE_GDX}" "${ENABLE_HWE}"
           echo "image_tag=${DEFAULT_TAG}" >> "${GITHUB_OUTPUT}"
 
       - name: Setup Syft
@@ -319,10 +335,33 @@ jobs:
           CENTOS_VERSION_NUMBER=$(echo "${CENTOS_VERSION}" | tr -cd '0-9')
           echo "CENTOS_VERSION_NUMBER=${CENTOS_VERSION_NUMBER}" >> "${GITHUB_ENV}"
 
-      - name: Set HWE Tag
-        if: ${{ inputs.hwe }}
+      - name: Add suffixes to other variations as well
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          HWE: ${{ inputs.hwe }}
         run: |
-          echo "DEFAULT_TAG=${DEFAULT_TAG}-hwe" >> "${GITHUB_ENV}"
+          export CENTOS_VERSION_SUFFIX=""
+          if [[ "${HWE}" == "true" ]] ; then
+            export DEFAULT_TAG="${DEFAULT_TAG}-hwe"
+            export CENTOS_VERSION_SUFFIX="-hwe"
+          fi
+          if [ "${REF_NAME}" != "${PRODUCTION_BRANCH}" ] && [ "$EVENT_NAME" == "pull_request" ] || [ "${EVENT_NAME}" == "merge_group" ] ; then
+            export TAG_SUFFIX="testing"
+            export DEFAULT_TAG="${DEFAULT_TAG}-${TAG_SUFFIX}"
+            export CENTOS_VERSION_SUFFIX="-${TAG_SUFFIX}"
+          fi
+          echo "DEFAULT_TAG=${DEFAULT_TAG}" >> "${GITHUB_ENV}"
+          echo "CENTOS_VERSION_SUFFIX=${CENTOS_VERSION_SUFFIX}" >> "${GITHUB_ENV}"
+
+      - name: Get current date
+        id: date
+        run: |
+          # Should generate a timestamp like what is defined on the ArtifactHub documentation
+          # E.G: 2022-02-08T15:38:15Z'
+          # https://artifacthub.io/docs/topics/repositories/container-images/
+          # https://linux.die.net/man/1/date
+          echo "date=$(date -u +%Y\-%m\-%d\T%H\:%M\:%S\Z)" >> $GITHUB_OUTPUT
 
       - name: Generate Image Metadata
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
@@ -331,15 +370,18 @@ jobs:
           tags: |
             type=raw,value=${{ env.DEFAULT_TAG }}
             type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
-            type=raw,value=${{ env.CENTOS_VERSION }}
-            type=raw,value=${{ env.CENTOS_VERSION }}.{{date 'YYYYMMDD'}}
-            type=raw,value=${{ env.CENTOS_VERSION_NUMBER }}
-            type=raw,value=${{ env.CENTOS_VERSION_NUMBER }}.{{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.DEFAULT_TAG }}-{{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.CENTOS_VERSION }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}
+            type=raw,value=${{ env.CENTOS_VERSION }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}.{{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.CENTOS_VERSION_NUMBER }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}
+            type=raw,value=${{ env.CENTOS_VERSION_NUMBER }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}.{{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.CENTOS_VERSION }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}-{{date 'YYYYMMDD'}}
+            type=raw,value=${{ env.CENTOS_VERSION_NUMBER }}${{ env.CENTOS_VERSION_SUFFIX }}${{ env.TAG_SUFFIX }}-{{date 'YYYYMMDD'}}
             type=ref,event=pr
           labels: |
-            bluefin.commit=${{ github.sha }}
+            aurora.commit=${{ github.sha }}
             io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/refs/heads/main/README.md
-            org.opencontainers.image.created={{date 'YYYY-MM-DDTHH:mm:ssZ'}}
+            org.opencontainers.image.created=${{ steps.date.outputs.date }}
             org.opencontainers.image.description=${{ env.IMAGE_DESC }}
             org.opencontainers.image.documentation=https://docs.projectbluefin.io
             org.opencontainers.image.source=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/blob/main/Containerfile
@@ -348,7 +390,7 @@ jobs:
             org.opencontainers.image.vendor=${{ github.repository_owner }}
             org.opencontainers.image.version=${{ env.CENTOS_VERSION }}
             io.artifacthub.package.deprecated=false
-            io.artifacthub.package.keywords=bootc,centos,bluefin,ublue,universal-blue
+            io.artifacthub.package.keywords=bootc,centos,aurora,ublue,universal-blue
             io.artifacthub.package.license=Apache-2.0
             io.artifacthub.package.logo-url=https://avatars.githubusercontent.com/u/120078124?s=200&v=4
             io.artifacthub.package.maintainers=[{\"name\":\"tulilirockz\",\"email\":\"tulilirockz@outlook.com\"},{\"name\":\"castrojo\",\"email\":\"jorge.castro@gmail.com\"}]

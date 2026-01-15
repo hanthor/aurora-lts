@@ -1,0 +1,14 @@
+version: "1"
+rules:
+  - base: lts
+    upstream: main
+    reviewers:
+      - castrojo
+      - tulilirockz
+      - hanthor
+    conflictReviewers:
+      - castrojo
+      - tulilirockz
+      - hanthor
+label: "promotion"
+conflictLabel: "promotion-conflict"
